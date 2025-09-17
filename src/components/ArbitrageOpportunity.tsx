@@ -28,6 +28,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   const [showDetails, setShowDetails] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
   const [proofUploaded, setProofUploaded] = useState(false);
+  const [depositStatus, setDepositStatus] = useState<'none' | 'waiting' | 'complete'>('none');
   const { toast } = useToast();
 
   const { teamA, teamB, sport, bookmakerA, bookmakerB, oddA, oddB, totalPool } = opportunity;
@@ -35,6 +36,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   // Calculate arbitrage
   const arbitrageFormula = (1 / oddA) + (1 / oddB);
   const profitMargin = ((1 - arbitrageFormula) * 100).toFixed(2);
+  const userProfitShare = (parseFloat(profitMargin) / 3).toFixed(2);
   
   // Determine user's side
   const isUserOnSideA = bookmakerA.toLowerCase().includes(userBookmaker.toLowerCase());
@@ -44,7 +46,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   
   // Calculate stakes
   const stakeAmount = (totalPool / userOdd) / arbitrageFormula;
-  const depositAmount = stakeAmount * 1.05; // 5% safety margin
+  const depositAmount = stakeAmount; // No safety margin
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -53,11 +55,20 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   };
 
   const handleDeposit = () => {
+    setDepositStatus('waiting');
     toast({
       title: "Deposit Initiated",
-      description: `Redirecting to payment for $${depositAmount.toFixed(2)}`,
+      description: `Depositing $${depositAmount.toFixed(2)} - Waiting for other player`,
     });
-    // In real app, redirect to payment processor
+    
+    // Simulate matching with another player after 5 seconds
+    setTimeout(() => {
+      setDepositStatus('complete');
+      toast({
+        title: "Match Found!",
+        description: "Both players have placed their bets. Good luck!",
+      });
+    }, 5000);
   };
 
   const handleProofUpload = () => {
@@ -79,7 +90,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             {teamA} vs {teamB}
           </h3>
           <Badge variant="secondary" className="bg-success/20 text-success">
-            +{profitMargin}% Profit
+            +{profitMargin}% Profit (You get +{userProfitShare}%)
           </Badge>
         </div>
         
@@ -130,10 +141,16 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
         </div>
 
         {/* Your Action Panel */}
-        <div className="bg-gradient-profit/10 p-4 rounded-lg border border-profit/20">
+        <div className={`p-4 rounded-lg border ${
+          depositStatus === 'none' ? 'bg-gradient-profit/10 border-profit/20' :
+          depositStatus === 'waiting' ? 'bg-yellow-100 border-yellow-300' :
+          'bg-green-100 border-green-300'
+        }`}>
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Calculator className="w-4 h-4" />
-            Your Position: {userTeam}
+            {depositStatus === 'none' ? `Your Position: ${userTeam}` :
+             depositStatus === 'waiting' ? 'Waiting for other player...' :
+             'Both players bet!'}
           </h4>
           
           <div className="space-y-3">
@@ -150,8 +167,8 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               <span className="font-bold text-success">${stakeAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm">Amount to Deposit:</span>
-              <span className="font-bold text-profit">${depositAmount.toFixed(2)}</span>
+              <span className="text-sm">Your Investment:</span>
+              <span className="font-bold text-profit">${stakeAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -182,7 +199,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               
               <div className="space-y-3">
                 <div className="p-3 bg-background rounded border">
-                  <Label className="text-sm">Required Deposit (with 5% safety)</Label>
+                  <Label className="text-sm">Required Deposit</Label>
                   <p className="text-lg font-bold text-profit">${depositAmount.toFixed(2)}</p>
                 </div>
                 
@@ -238,18 +255,18 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             </div>
           </div>
 
-          {/* Expected Returns */}
+          {/* Guaranteed Returns */}
           <div className="bg-success/10 p-4 rounded-lg border border-success/20">
-            <h5 className="font-semibold text-success mb-2">Expected Returns</h5>
+            <h5 className="font-semibold text-success mb-2">Guaranteed Returns</h5>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Your Investment:</p>
-                <p className="font-bold">${depositAmount.toFixed(2)}</p>
+                <p className="font-bold">${stakeAmount.toFixed(2)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Expected Return:</p>
+                <p className="text-muted-foreground">Guaranteed Return:</p>
                 <p className="font-bold text-success">
-                  ${(depositAmount * (1 + parseFloat(profitMargin) / 100)).toFixed(2)}
+                  ${(stakeAmount * (1 + parseFloat(userProfitShare) / 100)).toFixed(2)}
                 </p>
               </div>
             </div>
