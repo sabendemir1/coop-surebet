@@ -276,7 +276,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               <div>
                 <p className="text-muted-foreground">Guaranteed Return:</p>
                 <p className="font-bold text-success">
-                  ${(stakeAmount + parseFloat(userProfitShare) * totalPool / 100).toFixed(2)}
+                  ${(stakeAmount + (totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
                 </p>
               </div>
             </div>
