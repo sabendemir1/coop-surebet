@@ -36,7 +36,6 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   // Calculate arbitrage
   const arbitrageFormula = (1 / oddA) + (1 / oddB);
   const profitMargin = ((1 - arbitrageFormula) * 100).toFixed(2);
-  const userProfitShare = (parseFloat(profitMargin) / 3).toFixed(2);
   
   // Determine user's side
   const isUserOnSideA = bookmakerA.toLowerCase().includes(userBookmaker.toLowerCase());
@@ -44,8 +43,19 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   const userTeam = isUserOnSideA ? teamA : teamB;
   const userBookmakerName = isUserOnSideA ? bookmakerA : bookmakerB;
   
-  // Calculate stakes
-  const stakeAmount = (totalPool / userOdd) / arbitrageFormula;
+  // Calculate stakes for both sides
+  const stakeA = (totalPool / oddA) / arbitrageFormula;
+  const stakeB = (totalPool / oddB) / arbitrageFormula;
+  
+  // User's profit share based on their stake proportion (after 33% platform commission)
+  const userStake = isUserOnSideA ? stakeA : stakeB;
+  const totalStakes = stakeA + stakeB;
+  const userStakeRatio = userStake / totalStakes;
+  const profitAfterCommission = parseFloat(profitMargin) * 0.67; // 67% after platform takes 33%
+  const userProfitShare = (profitAfterCommission * userStakeRatio).toFixed(2);
+  
+  // Calculate stakes (using the already calculated userStake)
+  const stakeAmount = userStake;
   const depositAmount = stakeAmount; // No safety margin
   
   const formatTime = (seconds: number) => {
@@ -266,7 +276,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               <div>
                 <p className="text-muted-foreground">Guaranteed Return:</p>
                 <p className="font-bold text-success">
-                  ${(stakeAmount * (1 + parseFloat(userProfitShare) / 100)).toFixed(2)}
+                  ${(stakeAmount + parseFloat(userProfitShare) * totalPool / 100).toFixed(2)}
                 </p>
               </div>
             </div>
