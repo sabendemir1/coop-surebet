@@ -30,7 +30,10 @@ function calculateArbitrage(odds: OddsData['odds'], totalStake: number = 1000) {
   let bestAway = { price: 0, bookmaker: '', title: '' };
   let bestDraw = { price: 0, bookmaker: '', title: '' };
 
+  console.log(`Calculating arbitrage for ${odds.length} bookmakers`);
+
   for (const odd of odds) {
+    console.log(`Bookmaker: ${odd.bookmaker_key}, Home: ${odd.home_price}, Away: ${odd.away_price}, Draw: ${odd.draw_price}`);
     if (odd.home_price && odd.home_price > bestHome.price) {
       bestHome = { price: odd.home_price, bookmaker: odd.bookmaker_key, title: odd.bookmaker_title };
     }
@@ -42,12 +45,17 @@ function calculateArbitrage(odds: OddsData['odds'], totalStake: number = 1000) {
     }
   }
 
+  console.log(`Best odds - Home: ${bestHome.price} (${bestHome.bookmaker}), Away: ${bestAway.price} (${bestAway.bookmaker}), Draw: ${bestDraw.price} (${bestDraw.bookmaker})`);
+
   // Calculate arbitrage for 3-way markets (with draw) - prioritize this first
   if (bestHome.price > 0 && bestAway.price > 0 && bestDraw.price > 0) {
+    console.log('Using 3-way calculation');
     const impliedProbHome = 1 / bestHome.price;
     const impliedProbAway = 1 / bestAway.price;
     const impliedProbDraw = 1 / bestDraw.price;
     const totalImpliedProb = impliedProbHome + impliedProbAway + impliedProbDraw;
+    
+    console.log(`3-way - Total implied probability: ${totalImpliedProb.toFixed(4)}`);
 
     if (totalImpliedProb < 1) {
       // Arbitrage opportunity exists!
@@ -72,9 +80,12 @@ function calculateArbitrage(odds: OddsData['odds'], totalStake: number = 1000) {
   }
   // Calculate arbitrage for 2-way markets (only when no draw odds exist)
   else if (bestHome.price > 0 && bestAway.price > 0) {
+    console.log('Using 2-way calculation');
     const impliedProbHome = 1 / bestHome.price;
     const impliedProbAway = 1 / bestAway.price;
     const totalImpliedProb = impliedProbHome + impliedProbAway;
+    
+    console.log(`2-way - Total implied probability: ${totalImpliedProb.toFixed(4)}`);
 
     if (totalImpliedProb < 1) {
       // Arbitrage opportunity exists!
@@ -177,7 +188,7 @@ serve(async (req) => {
             best_away_stake: arbitrageResult.awayStake,
             best_draw_bookmaker: arbitrageResult.bestDraw?.bookmaker || null,
             best_draw_price: arbitrageResult.bestDraw?.price || null,
-            best_draw_stake: (arbitrageResult as any).drawStake || null,
+            best_draw_stake: arbitrageResult.drawStake || null,
             expires_at: expiresAt.toISOString(),
             is_active: true
           });
