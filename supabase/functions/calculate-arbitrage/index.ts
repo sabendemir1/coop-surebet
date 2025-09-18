@@ -42,33 +42,7 @@ function calculateArbitrage(odds: OddsData['odds'], totalStake: number = 1000) {
     }
   }
 
-  // Calculate arbitrage for 2-way markets (no draw)
-  if (bestHome.price > 0 && bestAway.price > 0) {
-    const impliedProbHome = 1 / bestHome.price;
-    const impliedProbAway = 1 / bestAway.price;
-    const totalImpliedProb = impliedProbHome + impliedProbAway;
-
-    if (totalImpliedProb < 1) {
-      // Arbitrage opportunity exists!
-      const profitMargin = (1 - totalImpliedProb);
-      
-      // Calculate stakes
-      const homeStake = (impliedProbHome / totalImpliedProb) * totalStake;
-      const awayStake = (impliedProbAway / totalImpliedProb) * totalStake;
-
-      return {
-        profitMargin,
-        totalStake,
-        homeStake: Math.round(homeStake * 100) / 100,
-        awayStake: Math.round(awayStake * 100) / 100,
-        bestHome,
-        bestAway,
-        bestDraw: bestDraw.price > 0 ? bestDraw : null
-      };
-    }
-  }
-
-  // Calculate arbitrage for 3-way markets (with draw)
+  // Calculate arbitrage for 3-way markets (with draw) - prioritize this first
   if (bestHome.price > 0 && bestAway.price > 0 && bestDraw.price > 0) {
     const impliedProbHome = 1 / bestHome.price;
     const impliedProbAway = 1 / bestAway.price;
@@ -93,6 +67,31 @@ function calculateArbitrage(odds: OddsData['odds'], totalStake: number = 1000) {
         bestHome,
         bestAway,
         bestDraw
+      };
+    }
+  }
+  // Calculate arbitrage for 2-way markets (only when no draw odds exist)
+  else if (bestHome.price > 0 && bestAway.price > 0) {
+    const impliedProbHome = 1 / bestHome.price;
+    const impliedProbAway = 1 / bestAway.price;
+    const totalImpliedProb = impliedProbHome + impliedProbAway;
+
+    if (totalImpliedProb < 1) {
+      // Arbitrage opportunity exists!
+      const profitMargin = (1 - totalImpliedProb);
+      
+      // Calculate stakes
+      const homeStake = (impliedProbHome / totalImpliedProb) * totalStake;
+      const awayStake = (impliedProbAway / totalImpliedProb) * totalStake;
+
+      return {
+        profitMargin,
+        totalStake,
+        homeStake: Math.round(homeStake * 100) / 100,
+        awayStake: Math.round(awayStake * 100) / 100,
+        bestHome,
+        bestAway,
+        bestDraw: null
       };
     }
   }
