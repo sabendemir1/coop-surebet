@@ -270,7 +270,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
           {/* Guaranteed Returns */}
           <div className="bg-success/10 p-4 rounded-lg border border-success/20">
             <h5 className="font-semibold text-success mb-2">Guaranteed Returns</h5>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Your Investment:</p>
                 <p className="font-bold">${stakeAmount.toFixed(2)}</p>
@@ -279,6 +279,12 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
                 <p className="text-muted-foreground">Guaranteed Return:</p>
                 <p className="font-bold text-success">
                   ${(stakeAmount + (totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Your Profit:</p>
+                <p className="font-bold text-success">
+                  ${((totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
                 </p>
               </div>
             </div>
