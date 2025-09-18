@@ -10,30 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 interface ArbitrageOpportunityProps {
   opportunity: {
     id: string;
+    matchId: string;
+    teamA: string;
+    teamB: string;
     sport: string;
-    homeTeam: string;
-    awayTeam: string;
-    commenceTime: string;
-    profitMargin: number;
-    totalStake: number;
-    homeBet: {
-      bookmaker: string;
-      odds: number;
-      stake: number;
-    };
-    awayBet: {
-      bookmaker: string;
-      odds: number;
-      stake: number;
-    };
-    drawBet?: {
-      bookmaker: string;
-      odds: number;
-      stake: number;
-    };
-    expiresAt: string;
-    expectedProfit: number;
-    minDeposit: number;
+    bookmakerA: string;
+    bookmakerB: string;
+    oddA: number;
+    oddB: number;
+    totalPool: number;
+    expiresIn: number;
   };
   userBookmaker: string;
 }
@@ -45,44 +31,34 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   const [depositStatus, setDepositStatus] = useState<'none' | 'waiting' | 'complete'>('none');
   const { toast } = useToast();
 
-  const { homeTeam, awayTeam, sport, homeBet, awayBet, drawBet, totalStake, profitMargin, expectedProfit, minDeposit, expiresAt } = opportunity;
+  const { teamA, teamB, sport, bookmakerA, bookmakerB, oddA, oddB, totalPool } = opportunity;
   
-  // Calculate profit margin percentage with null safety
-  const profitPercent = ((profitMargin || 0) * 100).toFixed(2);
+  // Calculate arbitrage
+  const arbitrageFormula = (1 / oddA) + (1 / oddB);
+  const profitMargin = ((1 - arbitrageFormula) * 100).toFixed(2);
   
   // Determine user's side
-  const isUserOnHomeTeam = homeBet.bookmaker.toLowerCase().includes(userBookmaker.toLowerCase());
-  const isUserOnAwayTeam = awayBet.bookmaker.toLowerCase().includes(userBookmaker.toLowerCase());
-  const isUserOnDraw = drawBet && drawBet.bookmaker.toLowerCase().includes(userBookmaker.toLowerCase());
+  const isUserOnSideA = bookmakerA.toLowerCase().includes(userBookmaker.toLowerCase());
+  const userOdd = isUserOnSideA ? oddA : oddB;
+  const userTeam = isUserOnSideA ? teamA : teamB;
+  const userBookmakerName = isUserOnSideA ? bookmakerA : bookmakerB;
   
-  let userBet, userTeam, opposingBets;
+  // Calculate stakes for both sides
+  const stakeA = (totalPool / oddA) / arbitrageFormula;
+  const stakeB = (totalPool / oddB) / arbitrageFormula;
   
-  if (isUserOnHomeTeam) {
-    userBet = homeBet;
-    userTeam = homeTeam;
-    opposingBets = [awayBet, ...(drawBet ? [drawBet] : [])];
-  } else if (isUserOnAwayTeam) {
-    userBet = awayBet;
-    userTeam = awayTeam;
-    opposingBets = [homeBet, ...(drawBet ? [drawBet] : [])];
-  } else if (isUserOnDraw && drawBet) {
-    userBet = drawBet;
-    userTeam = "Draw";
-    opposingBets = [homeBet, awayBet];
-  } else {
-    // Fallback if no exact match - use the first bet that partially matches
-    userBet = homeBet;
-    userTeam = homeTeam;
-    opposingBets = [awayBet, ...(drawBet ? [drawBet] : [])];
-  }
+  // User's profit share based on their stake proportion (after 33% platform commission)
+  const userStake = isUserOnSideA ? stakeA : stakeB;
+  const totalStakes = stakeA + stakeB;
+  const userStakeRatio = userStake / totalStakes;
+  const profitAfterCommission = parseFloat(profitMargin) * 0.67; // 67% after platform takes 33%
+  const userProfitShare = (profitAfterCommission * userStakeRatio).toFixed(2);
   
-  // Calculate time remaining until expiry
-  const timeUntilExpiry = () => {
-    const now = new Date().getTime();
-    const expiryTime = new Date(expiresAt).getTime();
-    const timeDiff = Math.max(0, Math.floor((expiryTime - now) / 1000));
-    return timeDiff;
-  };
+  // Calculate stakes and deposit
+  const stakeAmount = userStake;
+  const oppositeStake = isUserOnSideA ? stakeB : stakeA;
+  const totalEdgeProfit = totalPool * parseFloat(profitMargin) / 100;
+  const depositAmount = oppositeStake + totalEdgeProfit;
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -94,7 +70,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
     setDepositStatus('waiting');
     toast({
       title: "Deposit Initiated",
-      description: `Depositing $${(minDeposit || 0).toFixed(2)} - Waiting for other player`,
+      description: `Depositing $${depositAmount.toFixed(2)} - Waiting for other player`,
     });
     
     // Simulate matching with another player after 5 seconds
@@ -115,8 +91,6 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
     });
   };
 
-  const remainingTime = timeUntilExpiry();
-
   return (
     <Card className="p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between mb-4">
@@ -125,21 +99,21 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             {sport}
           </Badge>
           <h3 className="font-semibold text-lg text-foreground">
-            {homeTeam} vs {awayTeam}
+            {teamA} vs {teamB}
           </h3>
           <Badge variant="secondary" className="bg-success/20 text-success">
-            +{profitPercent}% Profit
+            +{profitMargin}% Profit (You get +{userProfitShare}%)
           </Badge>
         </div>
         
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Pool Size</p>
-            <p className="font-bold text-profit">${totalStake.toLocaleString()}</p>
+            <p className="font-bold text-profit">${totalPool.toLocaleString()}</p>
           </div>
           <div className="flex items-center gap-1 text-orange-500">
             <Clock className="w-4 h-4" />
-            <span className="text-sm">{formatTime(remainingTime)}</span>
+            <span className="text-sm">{formatTime(opportunity.expiresIn)}</span>
           </div>
         </div>
       </div>
@@ -147,52 +121,35 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         {/* Betting Options */}
         <div className="space-y-3">
-          <div className={`p-4 rounded-lg border-2 ${isUserOnHomeTeam ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30'}`}>
+          <div className={`p-4 rounded-lg border-2 ${isUserOnSideA ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30'}`}>
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium">{homeTeam} Win</p>
-                <p className="text-sm text-muted-foreground">{homeBet.bookmaker}</p>
+                <p className="font-medium">{teamA} Win</p>
+                <p className="text-sm text-muted-foreground">{bookmakerA}</p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold">@{homeBet.odds}</p>
-                {isUserOnHomeTeam && (
+                <p className="text-lg font-bold">@{oddA}</p>
+                {isUserOnSideA && (
                   <Badge variant="default" className="mt-1">Your Side</Badge>
                 )}
               </div>
             </div>
           </div>
           
-          <div className={`p-4 rounded-lg border-2 ${isUserOnAwayTeam ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30'}`}>
+          <div className={`p-4 rounded-lg border-2 ${!isUserOnSideA ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30'}`}>
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium">{awayTeam} Win</p>
-                <p className="text-sm text-muted-foreground">{awayBet.bookmaker}</p>
+                <p className="font-medium">{teamB} Win</p>
+                <p className="text-sm text-muted-foreground">{bookmakerB}</p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold">@{awayBet.odds}</p>
-                {isUserOnAwayTeam && (
+                <p className="text-lg font-bold">@{oddB}</p>
+                {!isUserOnSideA && (
                   <Badge variant="default" className="mt-1">Your Side</Badge>
                 )}
               </div>
             </div>
           </div>
-
-          {drawBet && (
-            <div className={`p-4 rounded-lg border-2 ${isUserOnDraw ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30'}`}>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">Draw</p>
-                  <p className="text-sm text-muted-foreground">{drawBet.bookmaker}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold">@{drawBet.odds}</p>
-                  {isUserOnDraw && (
-                    <Badge variant="default" className="mt-1">Your Side</Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Your Action Panel */}
@@ -211,19 +168,19 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-sm">Your Bookmaker:</span>
-              <span className="font-medium">{userBet.bookmaker}</span>
+              <span className="font-medium">{userBookmakerName}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm">Your Odds:</span>
-              <span className="font-medium">@{userBet.odds}</span>
+              <span className="font-medium">@{userOdd}</span>
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="text-sm">Amount to Play:</span>
-              <span className="font-bold text-success">${(userBet?.stake || 0).toFixed(2)}</span>
+              <span className="font-bold text-success">${stakeAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm">Your Investment:</span>
-              <span className="font-bold text-profit">${(userBet?.stake || 0).toFixed(2)}</span>
+              <span className="font-bold text-profit">${stakeAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -255,7 +212,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               <div className="space-y-3">
                 <div className="p-3 bg-background rounded border">
                   <Label className="text-sm">Required Deposit</Label>
-                  <p className="text-lg font-bold text-profit">${(minDeposit || 0).toFixed(2)}</p>
+                  <p className="text-lg font-bold text-profit">${depositAmount.toFixed(2)}</p>
                 </div>
                 
                 <Button 
@@ -264,7 +221,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
                   size="lg"
                   onClick={handleDeposit}
                 >
-                  Deposit ${(minDeposit || 0).toFixed(2)}
+                  Deposit ${depositAmount.toFixed(2)}
                 </Button>
               </div>
             </div>
@@ -278,10 +235,10 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               
               <div className="space-y-3">
                 <div className="p-3 bg-background rounded border">
-                  <Label className="text-sm">Bet Amount on {userBet?.bookmaker || 'Unknown'}</Label>
-                  <p className="text-lg font-bold text-success">${(userBet?.stake || 0).toFixed(2)}</p>
+                  <Label className="text-sm">Bet Amount on {userBookmakerName}</Label>
+                  <p className="text-lg font-bold text-success">${stakeAmount.toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Bet on: {userTeam} @ {userBet?.odds || 0}
+                    Bet on: {userTeam} @ {userOdd}
                   </p>
                 </div>
                 
@@ -316,18 +273,18 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Your Investment:</p>
-                <p className="font-bold">${(userBet?.stake || 0).toFixed(2)}</p>
+                <p className="font-bold">${stakeAmount.toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Guaranteed Return:</p>
                 <p className="font-bold text-success">
-                  ${((userBet?.stake || 0) + (expectedProfit || 0)).toFixed(2)}
+                  ${(stakeAmount + (totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
                 </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Your Profit:</p>
                 <p className="font-bold text-success">
-                  ${(expectedProfit || 0).toFixed(2)}
+                  ${((totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
                 </p>
               </div>
             </div>
