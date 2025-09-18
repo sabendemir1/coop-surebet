@@ -54,9 +54,11 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   const profitAfterCommission = parseFloat(profitMargin) * 0.67; // 67% after platform takes 33%
   const userProfitShare = (profitAfterCommission * userStakeRatio).toFixed(2);
   
-  // Calculate stakes (using the already calculated userStake)
+  // Calculate stakes and deposit
   const stakeAmount = userStake;
-  const depositAmount = stakeAmount; // No safety margin
+  const oppositeStake = isUserOnSideA ? stakeB : stakeA;
+  const totalEdgeProfit = totalPool * parseFloat(profitMargin) / 100;
+  const depositAmount = oppositeStake + totalEdgeProfit;
   
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
