@@ -46,35 +46,75 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const fetchArbitrageOpportunities = async () => {
-    try {
-      setLoading(true);
-      console.log('Fetching arbitrage opportunities...');
-      
-      const { data, error } = await supabase.functions.invoke('get-arbitrage-opportunities', {
-        body: {
-          minProfit: 0.001, // 0.1% minimum profit
-          limit: 50
-        }
-      });
-
-      if (error) {
-        console.error('Error fetching opportunities:', error);
-        return;
-      }
-
-      console.log('Received opportunities:', data);
-      
-      if (data?.opportunities) {
-        setOpportunities(data.opportunities);
-        setLastUpdated(new Date());
-      }
-    } catch (error) {
-      console.error('Error fetching arbitrage opportunities:', error);
-    } finally {
-      setLoading(false);
+  // Demo data for 2-outcome arbitrage opportunities
+  const demoOpportunities: ArbitrageOpportunityData[] = [
+    {
+      id: "demo-1",
+      sport: "soccer_epl",
+      homeTeam: "Manchester United",
+      awayTeam: "Arsenal",
+      commenceTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+      profitMargin: 0.0234, // 2.34%
+      totalStake: 1000,
+      homeBet: {
+        bookmaker: "draftkings",
+        odds: 2.15,
+        stake: 465.12
+      },
+      awayBet: {
+        bookmaker: "fanduel", 
+        odds: 2.35,
+        stake: 534.88
+      },
+      expiresAt: new Date(Date.now() + 90 * 60 * 1000).toISOString(), // 90 minutes from now
+      expectedProfit: 23.40,
+      minDeposit: 500
+    },
+    {
+      id: "demo-2", 
+      sport: "basketball_nba",
+      homeTeam: "Los Angeles Lakers",
+      awayTeam: "Boston Celtics",
+      commenceTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // 4 hours from now
+      profitMargin: 0.0189, // 1.89%
+      totalStake: 1000,
+      homeBet: {
+        bookmaker: "fanduel",
+        odds: 1.95,
+        stake: 512.82
+      },
+      awayBet: {
+        bookmaker: "draftkings",
+        odds: 2.05,
+        stake: 487.18
+      },
+      expiresAt: new Date(Date.now() + 3.5 * 60 * 60 * 1000).toISOString(), // 3.5 hours from now
+      expectedProfit: 18.90,
+      minDeposit: 500
+    },
+    {
+      id: "demo-3",
+      sport: "americanfootball_nfl", 
+      homeTeam: "Green Bay Packers",
+      awayTeam: "Chicago Bears",
+      commenceTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+      profitMargin: 0.0156, // 1.56%
+      totalStake: 1000,
+      homeBet: {
+        bookmaker: "draftkings",
+        odds: 1.85,
+        stake: 540.54
+      },
+      awayBet: {
+        bookmaker: "betmgm",
+        odds: 2.10,
+        stake: 459.46
+      },
+      expiresAt: new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString(), // 23 hours from now
+      expectedProfit: 15.60,
+      minDeposit: 500
     }
-  };
+  ];
 
   useEffect(() => {
     const name = localStorage.getItem("userName");
@@ -88,13 +128,10 @@ const Dashboard = () => {
     setUserName(name);
     setUserBookmaker(bookmaker);
     
-    // Fetch initial data
-    fetchArbitrageOpportunities();
-    
-    // Set up periodic refresh every 2 minutes
-    const interval = setInterval(fetchArbitrageOpportunities, 120000);
-    
-    return () => clearInterval(interval);
+    // Set demo data and mark as loaded
+    setOpportunities(demoOpportunities);
+    setLastUpdated(new Date());
+    setLoading(false);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -104,7 +141,14 @@ const Dashboard = () => {
   };
 
   const handleRefreshData = () => {
-    fetchArbitrageOpportunities();
+    // Refresh demo data with updated timestamps
+    const refreshedOpportunities = demoOpportunities.map(opp => ({
+      ...opp,
+      commenceTime: new Date(Date.now() + Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+      expiresAt: new Date(Date.now() + Math.random() * 6 * 60 * 60 * 1000).toISOString(),
+    }));
+    setOpportunities(refreshedOpportunities);
+    setLastUpdated(new Date());
   };
 
   const filteredOpportunities = opportunities.filter(opp => 
@@ -166,9 +210,9 @@ const Dashboard = () => {
           
           <TabsContent value="arbitrage" className="space-y-6">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-foreground mb-2">Live Arbitrage Opportunities</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-2">Demo Arbitrage Opportunities</h2>
               <p className="text-muted-foreground">
-                Risk-free betting opportunities matching your bookmaker account
+                Demo risk-free betting opportunities (2-outcome bets only)
               </p>
             </div>
 
