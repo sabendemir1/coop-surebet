@@ -1,105 +1,195 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, TrendingUp, Shield } from "lucide-react";
-import arbitrageDetection from "@/assets/arbitrage-detection.jpg";
+import { TrendingUp, ArrowDown, ArrowRight, CheckCircle } from "lucide-react";
 
 const ArbitrageExplanation = () => {
   return (
-    <section className="py-24 bg-muted/30">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <Badge variant="secondary" className="mb-4">
-            <Shield className="w-4 h-4 mr-2" />
-            Mathematical Guarantee
+          <Badge variant="outline" className="mb-4">
+            <TrendingUp className="w-4 h-4 mr-2" />
+            10-Step Pipeline
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            What is Arbitrage?
+            How The Arbitrage System Works
           </h2>
           <p className="text-xl text-muted-foreground max-w-4xl mx-auto">
-            Arbitrage betting exploits differences in odds between bookmakers to guarantee profit 
-            regardless of the event outcome. It's pure mathematics, not gambling.
+            A complete step-by-step breakdown of our deposit-guaranteed arbitrage system.
+            Deposits ensure losers get paid back and profits are distributed fairly.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
-          <div className="space-y-8">
-            <Card className="p-8">
-              <h3 className="text-2xl font-semibold mb-6 flex items-center gap-3">
-                <Calculator className="w-6 h-6 text-trust-foreground" />
-                The Core Formula
-              </h3>
+        {/* Step-by-step Pipeline */}
+        <div className="max-w-6xl mx-auto space-y-8">
+          
+          {/* Steps 1-4: Detection & Calculation */}
+          <Card className="p-8">
+            <h3 className="text-2xl font-bold mb-8 text-center">Phase 1: Detection & Calculation</h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               
-              <div className="space-y-6">
-                <div className="bg-muted p-4 rounded-lg font-mono text-center">
-                  <div className="text-lg font-bold mb-2">Arbitrage Detection</div>
-                  <div className="text-2xl text-trust-foreground">
-                    (1 / Odds₁) + (1 / Odds₂) &lt; 1
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    When this equation is true, an arbitrage opportunity exists
-                  </p>
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-trust text-trust-foreground font-bold text-xl flex items-center justify-center mx-auto">1</div>
+                <h4 className="font-semibold">Arbitrage Detected</h4>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  (1/2.10) + (1/2.05) = 0.964 &lt; 1
                 </div>
-
-                <div className="bg-success/10 p-4 rounded-lg">
-                  <div className="text-lg font-bold mb-2">Profit Margin</div>
-                  <div className="font-mono text-center text-xl text-success">
-                    Profit% = (1 - arbitrage_formula) × 100
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-lg">Real Example:</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="bg-card p-3 rounded border">
-                      <div className="font-semibold">Bookmaker A</div>
-                      <div>Team X @ 2.10</div>
-                      <div className="text-muted-foreground">1/2.10 = 0.476</div>
-                    </div>
-                    <div className="bg-card p-3 rounded border">
-                      <div className="font-semibold">Bookmaker B</div>
-                      <div>Team Y @ 2.05</div>
-                      <div className="text-muted-foreground">1/2.05 = 0.488</div>
-                    </div>
-                  </div>
-                  <div className="bg-trust/10 p-3 rounded text-center">
-                    <div className="font-semibold">0.476 + 0.488 = 0.964 &lt; 1 ✓</div>
-                    <div className="text-success">Profit: (1 - 0.964) × 100 = 3.6%</div>
-                  </div>
-                </div>
+                <ArrowDown className="w-6 h-6 text-muted-foreground mx-auto" />
               </div>
-            </Card>
-          </div>
 
-          <div className="space-y-8">
-            <div className="relative">
-              <img 
-                src={arbitrageDetection} 
-                alt="Arbitrage Detection System" 
-                className="w-full rounded-lg shadow-elegant"
-              />
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-success text-success-foreground font-bold text-xl flex items-center justify-center mx-auto">2</div>
+                <h4 className="font-semibold">Profit Calculated</h4>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  (1 - 0.964) × 100 = 3.6%
+                </div>
+                <ArrowDown className="w-6 h-6 text-muted-foreground mx-auto" />
+              </div>
+
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-warning text-warning-foreground font-bold text-xl flex items-center justify-center mx-auto">3</div>
+                <h4 className="font-semibold">Stakes Calculated</h4>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  A: €49.40<br/>B: €50.60
+                </div>
+                <ArrowDown className="w-6 h-6 text-muted-foreground mx-auto" />
+              </div>
+
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center mx-auto">4</div>
+                <h4 className="font-semibold">Deposits Calculated</h4>
+                <div className="bg-muted p-3 rounded text-sm font-mono">
+                  Edge: €3.60<br/>Each: €1.80
+                </div>
+                <ArrowDown className="w-6 h-6 text-muted-foreground mx-auto" />
+              </div>
+
             </div>
+          </Card>
+
+          {/* Steps 5-6: Player Actions */}
+          <Card className="p-8">
+            <h3 className="text-2xl font-bold mb-8 text-center">Phase 2: Deposits & Betting</h3>
             
-            <Card className="p-6 bg-gradient-subtle">
-              <h4 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-profit" />
-                Why This Works
-              </h4>
-              <div className="space-y-3 text-muted-foreground">
-                <p>
-                  <strong>Different bookmakers</strong> have different opinions on probabilities, 
-                  creating pricing inefficiencies.
-                </p>
-                <p>
-                  <strong>Mathematical certainty:</strong> When the sum of inverse odds is less than 1, 
-                  you can bet on all outcomes and guarantee profit.
-                </p>
-                <p>
-                  <strong>Risk-free:</strong> Unlike traditional betting, arbitrage betting eliminates 
-                  the element of chance through mathematical coverage.
-                </p>
+            <div className="grid lg:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center">5</div>
+                  <h4 className="text-xl font-semibold">Players Deposit</h4>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-card p-4 rounded border">
+                    <div className="font-semibold mb-2">Player A deposits:</div>
+                    <div className="space-y-1 text-sm font-mono">
+                      <div>• Own edge: €1.80</div>
+                      <div>• Player B's stake: €50.60</div>
+                      <div><strong>Total: €52.40</strong></div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-card p-4 rounded border">
+                    <div className="font-semibold mb-2">Player B deposits:</div>
+                    <div className="space-y-1 text-sm font-mono">
+                      <div>• Own edge: €1.80</div>
+                      <div>• Player A's stake: €49.40</div>
+                      <div><strong>Total: €51.20</strong></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </Card>
-          </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-trust text-trust-foreground font-bold text-xl flex items-center justify-center">6</div>
+                  <h4 className="text-xl font-semibold">Players Bet</h4>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-trust/10 p-4 rounded border-trust/30 border">
+                    <div className="font-semibold mb-2">Player A:</div>
+                    <div className="text-sm">Bets €49.40 on Man United @ 2.10</div>
+                  </div>
+                  
+                  <div className="bg-trust/10 p-4 rounded border-trust/30 border">
+                    <div className="font-semibold mb-2">Player B:</div>
+                    <div className="text-sm">Bets €50.60 on Chelsea @ 2.05</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Steps 7-10: Settlement */}
+          <Card className="p-8">
+            <h3 className="text-2xl font-bold mb-8 text-center">Phase 3: Match End & Settlement</h3>
+            
+            <div className="grid lg:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <span className="w-12 h-12 rounded-full bg-success text-success-foreground font-bold text-xl flex items-center justify-center">7</span>
+                  <span className="w-12 h-12 rounded-full bg-destructive text-destructive-foreground font-bold text-xl flex items-center justify-center">8</span>
+                  <h4 className="text-xl font-semibold">Match Ends</h4>
+                </div>
+                
+                <div className="bg-success/10 p-4 rounded border-success/30 border">
+                  <div className="font-semibold mb-2 text-success">If Player A Wins (Man United):</div>
+                  <div className="space-y-1 text-sm">
+                    <div>• Player A gets €103.74 from bookmaker</div>
+                    <div>• Player B gets back from system:</div>
+                    <div className="ml-4 font-mono">- His own stake: €50.60</div>
+                    <div className="ml-4 font-mono">- His deposited edge: €1.80</div>
+                    <div className="ml-4 font-mono">- A's stake he deposited: €49.40</div>
+                    <div className="ml-4 font-mono"><strong>Total: €101.80</strong></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <span className="w-12 h-12 rounded-full bg-warning text-warning-foreground font-bold text-xl flex items-center justify-center">9</span>
+                  <span className="w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center">10</span>
+                  <h4 className="text-xl font-semibold">Profit Distribution</h4>
+                </div>
+                
+                <div className="bg-primary/10 p-4 rounded border-primary/30 border">
+                  <div className="font-semibold mb-2">Winner's Edge (€1.80) Split:</div>
+                  <div className="space-y-1 text-sm font-mono">
+                    <div>• Platform (33%): €0.59</div>
+                    <div>• Winner gets (49.4%): €0.62</div>
+                    <div>• Loser gets (17.6%): €0.59</div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="font-semibold">Final Profits:</div>
+                    <div className="text-sm">Winner: €0.62 | Loser: €0.59</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Key Guarantees */}
+          <Card className="p-8 bg-trust/5 border-trust/30">
+            <h3 className="text-2xl font-bold mb-6 text-center flex items-center justify-center gap-2">
+              <CheckCircle className="w-8 h-8 text-trust-foreground" />
+              System Guarantees
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6 text-center">
+              <div>
+                <h4 className="font-semibold mb-2">Loser Protection</h4>
+                <p className="text-sm text-muted-foreground">Deposits ensure losers always get their money back plus profit share</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">No Player Risk</h4>
+                <p className="text-sm text-muted-foreground">If players don't bet, they only lose if their odds would have won</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Mathematical Certainty</h4>
+                <p className="text-sm text-muted-foreground">Profits are guaranteed by arbitrage mathematics, not luck</p>
+              </div>
+            </div>
+          </Card>
+
         </div>
       </div>
     </section>
