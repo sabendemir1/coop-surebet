@@ -83,6 +83,7 @@ export default {
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-success': 'var(--gradient-success)', 
         'gradient-profit': 'var(--gradient-profit)',
+        'gradient-subtle': 'var(--gradient-subtle)',
       },
       boxShadow: {
         'trust': 'var(--shadow-trust)',

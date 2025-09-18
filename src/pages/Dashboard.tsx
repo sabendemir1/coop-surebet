@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRight, TrendingUp, DollarSign, Clock, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ArbitrageOpportunity from "@/components/ArbitrageOpportunity";
+import { LiveOddsTab } from "@/components/LiveOddsTab";
 import { supabase } from "@/integrations/supabase/client";
 
 // Dashboard interface for API data
@@ -156,78 +158,91 @@ const Dashboard = () => {
 
       {/* Dashboard Content */}
       <div className="container mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-2">Live Arbitrage Opportunities</h2>
-          <p className="text-muted-foreground">
-            Risk-free betting opportunities matching your bookmaker account
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-success/20 rounded-full">
-                <TrendingUp className="w-5 h-5 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Available Opportunities</p>
-                <p className="text-2xl font-bold text-foreground">{filteredOpportunities.length}</p>
-              </div>
-            </div>
-          </Card>
+        <Tabs defaultValue="arbitrage" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="arbitrage">Arbitrage Opportunities</TabsTrigger>
+            <TabsTrigger value="live-odds">Live Odds</TabsTrigger>
+          </TabsList>
           
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-profit/20 rounded-full">
-                <DollarSign className="w-5 h-5 text-profit" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Pool Value</p>
-                <p className="text-2xl font-bold text-foreground">
-                  ${totalPoolValue.toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-trust/20 rounded-full">
-                <Clock className="w-5 h-5 text-trust" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Avg. Profit Margin</p>
-                <p className="text-2xl font-bold text-foreground">{avgProfitMargin.toFixed(1)}%</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Opportunities List */}
-        <div className="space-y-4">
-          {loading ? (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">Loading arbitrage opportunities...</p>
-            </Card>
-          ) : filteredOpportunities.length === 0 ? (
-            <Card className="p-8 text-center">
+          <TabsContent value="arbitrage" className="space-y-6">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-foreground mb-2">Live Arbitrage Opportunities</h2>
               <p className="text-muted-foreground">
-                No arbitrage opportunities found for your bookmaker. 
-                <br />
-                New opportunities appear every few minutes.
+                Risk-free betting opportunities matching your bookmaker account
               </p>
-            </Card>
-          ) : (
-            filteredOpportunities.map((opportunity) => (
-              <ArbitrageOpportunity 
-                key={opportunity.id} 
-                opportunity={opportunity}
-                userBookmaker={userBookmaker}
-              />
-            ))
-          )}
-        </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <Card className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-success/20 rounded-full">
+                    <TrendingUp className="w-5 h-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Available Opportunities</p>
+                    <p className="text-2xl font-bold text-foreground">{filteredOpportunities.length}</p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-profit/20 rounded-full">
+                    <DollarSign className="w-5 h-5 text-profit" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Pool Value</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      ${totalPoolValue.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-trust/20 rounded-full">
+                    <Clock className="w-5 h-5 text-trust" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Avg. Profit Margin</p>
+                    <p className="text-2xl font-bold text-foreground">{avgProfitMargin.toFixed(1)}%</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Opportunities List */}
+            <div className="space-y-4">
+              {loading ? (
+                <Card className="p-8 text-center">
+                  <p className="text-muted-foreground">Loading arbitrage opportunities...</p>
+                </Card>
+              ) : filteredOpportunities.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <p className="text-muted-foreground">
+                    No arbitrage opportunities found for your bookmaker. 
+                    <br />
+                    New opportunities appear every few minutes.
+                  </p>
+                </Card>
+              ) : (
+                filteredOpportunities.map((opportunity) => (
+                  <ArbitrageOpportunity 
+                    key={opportunity.id} 
+                    opportunity={opportunity}
+                    userBookmaker={userBookmaker}
+                  />
+                ))
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="live-odds">
+            <LiveOddsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

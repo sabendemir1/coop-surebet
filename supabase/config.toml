@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.get-arbitrage-opportunities]
 verify_jwt = false
+
+[functions.get-live-odds]
+verify_jwt = false
+
+[functions.trigger-fetch-odds]
+verify_jwt = false
