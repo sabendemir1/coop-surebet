@@ -8,7 +8,7 @@ import ArbitrageOpportunity from "@/components/ArbitrageOpportunity";
 import { supabase } from "@/integrations/supabase/client";
 
 // Dashboard interface for API data
-interface ArbitrageOpportunity {
+interface ArbitrageOpportunityData {
   id: string;
   sport: string;
   homeTeam: string;
@@ -40,7 +40,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("");
   const [userBookmaker, setUserBookmaker] = useState("");
-  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
+  const [opportunities, setOpportunities] = useState<ArbitrageOpportunityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
