@@ -81,22 +81,22 @@ function calculateArbitrage(odds: OddsData['odds'], totalStake: number = 1000) {
   // Calculate arbitrage for 2-way markets (only when no draw odds exist)
   else if (bestHome.price > 0 && bestAway.price > 0) {
     console.log('Using 2-way calculation');
-    const impliedProbHome = 1 / bestHome.price;
-    const impliedProbAway = 1 / bestAway.price;
-    const totalImpliedProb = impliedProbHome + impliedProbAway;
+    const arbitrageFormula = (1 / bestHome.price) + (1 / bestAway.price);
     
-    console.log(`2-way - Total implied probability: ${totalImpliedProb.toFixed(4)}`);
+    console.log(`2-way - Arbitrage formula: ${arbitrageFormula.toFixed(4)}`);
 
-    if (totalImpliedProb < 1) {
+    if (arbitrageFormula < 1) {
       // Arbitrage opportunity exists!
-      const profitMargin = (1 - totalImpliedProb);
+      const profitMargin = (1 - arbitrageFormula) * 100;
       
-      // Calculate stakes
-      const homeStake = (impliedProbHome / totalImpliedProb) * totalStake;
-      const awayStake = (impliedProbAway / totalImpliedProb) * totalStake;
+      // Calculate optimal stakes using correct formula
+      const homeStake = (totalStake / bestHome.price) / arbitrageFormula;
+      const awayStake = (totalStake / bestAway.price) / arbitrageFormula;
+
+      console.log(`Stakes calculated - Home: ${homeStake.toFixed(2)}, Away: ${awayStake.toFixed(2)}, Total: ${(homeStake + awayStake).toFixed(2)}`);
 
       return {
-        profitMargin,
+        profitMargin: profitMargin / 100, // Convert back to decimal for consistency
         totalStake,
         homeStake: Math.round(homeStake * 100) / 100,
         awayStake: Math.round(awayStake * 100) / 100,
