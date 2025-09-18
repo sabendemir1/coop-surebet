@@ -14,7 +14,239 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      arbitrage_opportunities: {
+        Row: {
+          away_team: string
+          best_away_bookmaker: string
+          best_away_price: number
+          best_away_stake: number
+          best_draw_bookmaker: string | null
+          best_draw_price: number | null
+          best_draw_stake: number | null
+          best_home_bookmaker: string
+          best_home_price: number
+          best_home_stake: number
+          commence_time: string
+          created_at: string | null
+          event_id: string
+          expires_at: string
+          home_team: string
+          id: string
+          is_active: boolean | null
+          profit_margin: number
+          sport_key: string
+          total_stake: number
+          updated_at: string | null
+        }
+        Insert: {
+          away_team: string
+          best_away_bookmaker: string
+          best_away_price: number
+          best_away_stake: number
+          best_draw_bookmaker?: string | null
+          best_draw_price?: number | null
+          best_draw_stake?: number | null
+          best_home_bookmaker: string
+          best_home_price: number
+          best_home_stake: number
+          commence_time: string
+          created_at?: string | null
+          event_id: string
+          expires_at: string
+          home_team: string
+          id?: string
+          is_active?: boolean | null
+          profit_margin: number
+          sport_key: string
+          total_stake: number
+          updated_at?: string | null
+        }
+        Update: {
+          away_team?: string
+          best_away_bookmaker?: string
+          best_away_price?: number
+          best_away_stake?: number
+          best_draw_bookmaker?: string | null
+          best_draw_price?: number | null
+          best_draw_stake?: number | null
+          best_home_bookmaker?: string
+          best_home_price?: number
+          best_home_stake?: number
+          commence_time?: string
+          created_at?: string | null
+          event_id?: string
+          expires_at?: string
+          home_team?: string
+          id?: string
+          is_active?: boolean | null
+          profit_margin?: number
+          sport_key?: string
+          total_stake?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arbitrage_opportunities_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookmakers: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          last_update: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          key: string
+          last_update?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          last_update?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          away_team: string
+          bookmaker_count: number | null
+          commence_time: string
+          created_at: string | null
+          home_team: string
+          id: string
+          last_update: string | null
+          sport_key: string
+          sport_title: string
+          updated_at: string | null
+        }
+        Insert: {
+          away_team: string
+          bookmaker_count?: number | null
+          commence_time: string
+          created_at?: string | null
+          home_team: string
+          id: string
+          last_update?: string | null
+          sport_key: string
+          sport_title: string
+          updated_at?: string | null
+        }
+        Update: {
+          away_team?: string
+          bookmaker_count?: number | null
+          commence_time?: string
+          created_at?: string | null
+          home_team?: string
+          id?: string
+          last_update?: string | null
+          sport_key?: string
+          sport_title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      odds: {
+        Row: {
+          away_price: number | null
+          bookmaker_key: string
+          bookmaker_title: string
+          created_at: string | null
+          draw_price: number | null
+          event_id: string
+          home_price: number | null
+          id: string
+          last_update: string | null
+          market_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          away_price?: number | null
+          bookmaker_key: string
+          bookmaker_title: string
+          created_at?: string | null
+          draw_price?: number | null
+          event_id: string
+          home_price?: number | null
+          id?: string
+          last_update?: string | null
+          market_key?: string
+          updated_at?: string | null
+        }
+        Update: {
+          away_price?: number | null
+          bookmaker_key?: string
+          bookmaker_title?: string
+          created_at?: string | null
+          draw_price?: number | null
+          event_id?: string
+          home_price?: number | null
+          id?: string
+          last_update?: string | null
+          market_key?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "odds_bookmaker_key_fkey"
+            columns: ["bookmaker_key"]
+            isOneToOne: false
+            referencedRelation: "bookmakers"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "odds_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sports: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          has_outrights: boolean | null
+          id: string
+          key: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          has_outrights?: boolean | null
+          id: string
+          key: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          has_outrights?: boolean | null
+          id?: string
+          key?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
