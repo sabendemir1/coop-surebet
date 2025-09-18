@@ -1,1 +1,10 @@
 project_id = "vjkovzjuhkgtqlhhhkgr"
+
+[functions.fetch-odds]
+verify_jwt = false
+
+[functions.calculate-arbitrage]
+verify_jwt = false
+
+[functions.get-arbitrage-opportunities]
+verify_jwt = false

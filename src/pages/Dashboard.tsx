@@ -5,61 +5,74 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, TrendingUp, DollarSign, Clock, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ArbitrageOpportunity from "@/components/ArbitrageOpportunity";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock data generator for arbitrage opportunities
-const generateArbitrageOpportunities = () => {
-  const bookmakers = [
-    "Bet365", "Pinnacle", "Betfair", "Unibet", "Betway", 
-    "William Hill", "BWin", "Betsson", "DraftKings", "FanDuel"
-  ];
-  
-  const matches = [
-    { teamA: "Manchester City", teamB: "Arsenal", sport: "Football" },
-    { teamA: "Real Madrid", teamB: "Barcelona", sport: "Football" },
-    { teamA: "Lakers", teamB: "Warriors", sport: "Basketball" },
-    { teamA: "Djokovic", teamB: "Nadal", sport: "Tennis" },
-    { teamA: "Bayern Munich", teamB: "Dortmund", sport: "Football" },
-    { teamA: "Celtics", teamB: "Heat", sport: "Basketball" },
-    { teamA: "Federer", teamB: "Murray", sport: "Tennis" },
-    { teamA: "PSG", teamB: "Marseille", sport: "Football" },
-  ];
-
-  return Array.from({ length: 8 }, (_, i) => {
-    // Generate odds that create arbitrage (1/oddA + 1/oddB < 1)
-    const oddA = 2.0 + Math.random() * 1.5; // 2.0 to 3.5
-    const maxOddB = 1 / (1 - 1/oddA - 0.02); // Ensure arbitrage with 2% margin
-    const oddB = 2.0 + Math.random() * (maxOddB - 2.0);
-    
-    const totalPool = Math.floor(Math.random() * 9900) + 100; // $100 to $10,000
-    const match = matches[i % matches.length];
-    
-    const bookmakerA = bookmakers[Math.floor(Math.random() * bookmakers.length)];
-    let bookmakerB = bookmakers[Math.floor(Math.random() * bookmakers.length)];
-    while (bookmakerB === bookmakerA) {
-      bookmakerB = bookmakers[Math.floor(Math.random() * bookmakers.length)];
-    }
-
-    return {
-      id: `arb_${i + 1}`,
-      matchId: `match_${i + 1}`,
-      teamA: match.teamA,
-      teamB: match.teamB,
-      sport: match.sport,
-      bookmakerA,
-      bookmakerB,
-      oddA: Number(oddA.toFixed(2)),
-      oddB: Number(oddB.toFixed(2)),
-      totalPool,
-      expiresIn: Math.floor(Math.random() * 3600) + 300, // 5 minutes to 1 hour
-    };
-  });
-};
+// Dashboard interface for API data
+interface ArbitrageOpportunity {
+  id: string;
+  sport: string;
+  homeTeam: string;
+  awayTeam: string;
+  commenceTime: string;
+  profitMargin: number;
+  totalStake: number;
+  homeBet: {
+    bookmaker: string;
+    odds: number;
+    stake: number;
+  };
+  awayBet: {
+    bookmaker: string;
+    odds: number;
+    stake: number;
+  };
+  drawBet?: {
+    bookmaker: string;
+    odds: number;
+    stake: number;
+  };
+  expiresAt: string;
+  expectedProfit: number;
+  minDeposit: number;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("");
   const [userBookmaker, setUserBookmaker] = useState("");
-  const [opportunities, setOpportunities] = useState(generateArbitrageOpportunities());
+  const [opportunities, setOpportunities] = useState<ArbitrageOpportunity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const fetchArbitrageOpportunities = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching arbitrage opportunities...');
+      
+      const { data, error } = await supabase.functions.invoke('get-arbitrage-opportunities', {
+        body: {
+          minProfit: 0.001, // 0.1% minimum profit
+          limit: 50
+        }
+      });
+
+      if (error) {
+        console.error('Error fetching opportunities:', error);
+        return;
+      }
+
+      console.log('Received opportunities:', data);
+      
+      if (data?.opportunities) {
+        setOpportunities(data.opportunities);
+        setLastUpdated(new Date());
+      }
+    } catch (error) {
+      console.error('Error fetching arbitrage opportunities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const name = localStorage.getItem("userName");
@@ -72,6 +85,14 @@ const Dashboard = () => {
     
     setUserName(name);
     setUserBookmaker(bookmaker);
+    
+    // Fetch initial data
+    fetchArbitrageOpportunities();
+    
+    // Set up periodic refresh every 2 minutes
+    const interval = setInterval(fetchArbitrageOpportunities, 120000);
+    
+    return () => clearInterval(interval);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -80,10 +101,20 @@ const Dashboard = () => {
     navigate("/");
   };
 
+  const handleRefreshData = () => {
+    fetchArbitrageOpportunities();
+  };
+
   const filteredOpportunities = opportunities.filter(opp => 
-    opp.bookmakerA.toLowerCase().includes(userBookmaker.toLowerCase()) || 
-    opp.bookmakerB.toLowerCase().includes(userBookmaker.toLowerCase())
+    opp.homeBet.bookmaker.toLowerCase().includes(userBookmaker.toLowerCase()) || 
+    opp.awayBet.bookmaker.toLowerCase().includes(userBookmaker.toLowerCase()) ||
+    (opp.drawBet && opp.drawBet.bookmaker.toLowerCase().includes(userBookmaker.toLowerCase()))
   );
+
+  const totalPoolValue = filteredOpportunities.reduce((sum, opp) => sum + opp.totalStake, 0);
+  const avgProfitMargin = filteredOpportunities.length > 0 
+    ? (filteredOpportunities.reduce((sum, opp) => sum + (opp.profitMargin * 100), 0) / filteredOpportunities.length)
+    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -96,6 +127,11 @@ const Dashboard = () => {
               <Badge variant="secondary" className="bg-success/20 text-success">
                 Live Trading
               </Badge>
+              {lastUpdated && (
+                <Badge variant="outline" className="text-xs">
+                  Updated: {lastUpdated.toLocaleTimeString()}
+                </Badge>
+              )}
             </div>
             
             <div className="flex items-center gap-4">
@@ -103,6 +139,9 @@ const Dashboard = () => {
                 <p className="font-semibold text-foreground">Welcome, {userName}</p>
                 <p className="text-sm text-muted-foreground">Account: {userBookmaker}</p>
               </div>
+              <Button variant="outline" onClick={handleRefreshData} disabled={loading}>
+                {loading ? "Loading..." : "Refresh"}
+              </Button>
               <Button variant="outline" onClick={() => navigate("/info")}>
                 <Info className="w-4 h-4 mr-2" />
                 Info
@@ -146,7 +185,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Total Pool Value</p>
                 <p className="text-2xl font-bold text-foreground">
-                  ${filteredOpportunities.reduce((sum, opp) => sum + opp.totalPool, 0).toLocaleString()}
+                  ${totalPoolValue.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -159,7 +198,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Avg. Profit Margin</p>
-                <p className="text-2xl font-bold text-foreground">2.8%</p>
+                <p className="text-2xl font-bold text-foreground">{avgProfitMargin.toFixed(1)}%</p>
               </div>
             </div>
           </Card>
@@ -167,7 +206,11 @@ const Dashboard = () => {
 
         {/* Opportunities List */}
         <div className="space-y-4">
-          {filteredOpportunities.length === 0 ? (
+          {loading ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">Loading arbitrage opportunities...</p>
+            </Card>
+          ) : filteredOpportunities.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">
                 No arbitrage opportunities found for your bookmaker. 
