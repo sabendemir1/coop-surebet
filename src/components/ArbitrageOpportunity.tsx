@@ -47,8 +47,8 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
 
   const { homeTeam, awayTeam, sport, homeBet, awayBet, drawBet, totalStake, profitMargin, expectedProfit, minDeposit, expiresAt } = opportunity;
   
-  // Calculate profit margin percentage
-  const profitPercent = (profitMargin * 100).toFixed(2);
+  // Calculate profit margin percentage with null safety
+  const profitPercent = ((profitMargin || 0) * 100).toFixed(2);
   
   // Determine user's side
   const isUserOnHomeTeam = homeBet.bookmaker.toLowerCase().includes(userBookmaker.toLowerCase());
@@ -94,7 +94,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
     setDepositStatus('waiting');
     toast({
       title: "Deposit Initiated",
-      description: `Depositing $${minDeposit.toFixed(2)} - Waiting for other player`,
+      description: `Depositing $${(minDeposit || 0).toFixed(2)} - Waiting for other player`,
     });
     
     // Simulate matching with another player after 5 seconds
@@ -219,11 +219,11 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="text-sm">Amount to Play:</span>
-              <span className="font-bold text-success">${userBet.stake.toFixed(2)}</span>
+              <span className="font-bold text-success">${(userBet?.stake || 0).toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm">Your Investment:</span>
-              <span className="font-bold text-profit">${userBet.stake.toFixed(2)}</span>
+              <span className="font-bold text-profit">${(userBet?.stake || 0).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -255,7 +255,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               <div className="space-y-3">
                 <div className="p-3 bg-background rounded border">
                   <Label className="text-sm">Required Deposit</Label>
-                  <p className="text-lg font-bold text-profit">${minDeposit.toFixed(2)}</p>
+                  <p className="text-lg font-bold text-profit">${(minDeposit || 0).toFixed(2)}</p>
                 </div>
                 
                 <Button 
@@ -264,7 +264,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
                   size="lg"
                   onClick={handleDeposit}
                 >
-                  Deposit ${minDeposit.toFixed(2)}
+                  Deposit ${(minDeposit || 0).toFixed(2)}
                 </Button>
               </div>
             </div>
@@ -278,10 +278,10 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               
               <div className="space-y-3">
                 <div className="p-3 bg-background rounded border">
-                  <Label className="text-sm">Bet Amount on {userBet.bookmaker}</Label>
-                  <p className="text-lg font-bold text-success">${userBet.stake.toFixed(2)}</p>
+                  <Label className="text-sm">Bet Amount on {userBet?.bookmaker || 'Unknown'}</Label>
+                  <p className="text-lg font-bold text-success">${(userBet?.stake || 0).toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Bet on: {userTeam} @ {userBet.odds}
+                    Bet on: {userTeam} @ {userBet?.odds || 0}
                   </p>
                 </div>
                 
@@ -316,18 +316,18 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Your Investment:</p>
-                <p className="font-bold">${userBet.stake.toFixed(2)}</p>
+                <p className="font-bold">${(userBet?.stake || 0).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Guaranteed Return:</p>
                 <p className="font-bold text-success">
-                  ${(userBet.stake + expectedProfit).toFixed(2)}
+                  ${((userBet?.stake || 0) + (expectedProfit || 0)).toFixed(2)}
                 </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Your Profit:</p>
                 <p className="font-bold text-success">
-                  ${expectedProfit.toFixed(2)}
+                  ${(expectedProfit || 0).toFixed(2)}
                 </p>
               </div>
             </div>
