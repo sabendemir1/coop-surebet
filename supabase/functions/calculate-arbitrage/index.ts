@@ -158,6 +158,10 @@ serve(async (req) => {
 
     for (const event of events || []) {
       if (!event.odds || event.odds.length < 2) continue;
+      
+      // TEMPORARY: Skip 3-outcome bets (with draw odds) for now
+      const hasDrawOdds = event.odds.some((odd: any) => odd.draw_price && odd.draw_price > 0);
+      if (hasDrawOdds) continue;
 
       const arbitrageResult = calculateArbitrage(event.odds as any[]);
       
