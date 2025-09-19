@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, TrendingUp, DollarSign, Clock, Info } from "lucide-react";
+import { ArrowRight, TrendingUp, DollarSign, Clock, Info, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ArbitrageOpportunity from "@/components/ArbitrageOpportunity";
+import AddArbitrageDialog from "@/components/AddArbitrageDialog";
 
 // Mock data generator for arbitrage opportunities
 const generateArbitrageOpportunities = () => {
@@ -60,6 +61,7 @@ const Dashboard = () => {
   const [userName, setUserName] = useState("");
   const [userBookmaker, setUserBookmaker] = useState("");
   const [opportunities, setOpportunities] = useState(generateArbitrageOpportunities());
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   useEffect(() => {
     const name = localStorage.getItem("userName");
@@ -78,6 +80,11 @@ const Dashboard = () => {
     localStorage.removeItem("userName");
     localStorage.removeItem("userBookmaker");
     navigate("/");
+  };
+
+  const handleAddArbitrage = (newOpportunity) => {
+    setOpportunities(prev => [newOpportunity, ...prev]);
+    setIsAddDialogOpen(false);
   };
 
   const filteredOpportunities = opportunities.filter(opp => 
@@ -117,11 +124,17 @@ const Dashboard = () => {
 
       {/* Dashboard Content */}
       <div className="container mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-foreground mb-2">Live Arbitrage Opportunities</h2>
-          <p className="text-muted-foreground">
-            Risk-free betting opportunities matching your bookmaker account
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Live Arbitrage Opportunities</h2>
+            <p className="text-muted-foreground">
+              Risk-free betting opportunities matching your bookmaker account
+            </p>
+          </div>
+          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Arbitrage
+          </Button>
         </div>
 
         {/* Stats */}
@@ -186,6 +199,13 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      <AddArbitrageDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onAddArbitrage={handleAddArbitrage}
+        userBookmaker={userBookmaker}
+      />
     </div>
   );
 };
