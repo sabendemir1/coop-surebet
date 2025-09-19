@@ -76,13 +76,13 @@ const MathematicalBreakdown = () => {
                 <div className="bg-warning/10 p-6 rounded-lg border-warning/30 border">
                   <h4 className="font-semibold mb-4 text-lg">4. Edge Per Player</h4>
                   <div className="bg-muted p-4 rounded font-mono text-center">
-                    <div className="text-lg font-bold mb-2">edge_per_player = (total_pool × profit_margin / 100) / 2</div>
-                    <div className="text-sm text-muted-foreground">Each player's edge deposit</div>
+                    <div className="text-lg font-bold mb-2">edge_per_player = total_pool × profit_margin / 100</div>
+                    <div className="text-sm text-muted-foreground">Each player deposits full edge</div>
                   </div>
                   <div className="mt-4 text-sm">
                     <div className="font-semibold">Example:</div>
-                    <div>(€100 × 3.6% / 100) / 2 = €1.80 each</div>
-                    <div className="text-success">✓ €1.80 edge deposit per player</div>
+                    <div>€100 × 3.6% / 100 = €3.60 each</div>
+                    <div className="text-success">✓ €3.60 edge deposit per player</div>
                   </div>
                 </div>
               </div>
@@ -100,26 +100,26 @@ const MathematicalBreakdown = () => {
               <div className="bg-primary/10 p-6 rounded-lg border-primary/30 border">
                 <h4 className="font-semibold mb-4 text-lg">Player A Deposit Formula</h4>
                 <div className="bg-muted p-4 rounded font-mono space-y-2">
-                  <div className="text-lg font-bold">deposit_A = stake_B + edge_per_player</div>
-                  <div className="text-sm text-muted-foreground">Other player's stake + own edge</div>
+                  <div className="text-lg font-bold">deposit_A = stake_B + total_edge</div>
+                  <div className="text-sm text-muted-foreground">Other player's stake + full edge</div>
                 </div>
                 <div className="mt-4 text-sm">
                   <div className="font-semibold">Example:</div>
-                  <div>€50.60 + €1.80 = €52.40</div>
-                  <div className="text-success">✓ Player A deposits €52.40</div>
+                  <div>€50.60 + €3.60 = €54.20</div>
+                  <div className="text-success">✓ Player A deposits €54.20</div>
                 </div>
               </div>
 
               <div className="bg-warning/10 p-6 rounded-lg border-warning/30 border">
                 <h4 className="font-semibold mb-4 text-lg">Player B Deposit Formula</h4>
                 <div className="bg-muted p-4 rounded font-mono space-y-2">
-                  <div className="text-lg font-bold">deposit_B = stake_A + edge_per_player</div>
-                  <div className="text-sm text-muted-foreground">Other player's stake + own edge</div>
+                  <div className="text-lg font-bold">deposit_B = stake_A + total_edge</div>
+                  <div className="text-sm text-muted-foreground">Other player's stake + full edge</div>
                 </div>
                 <div className="mt-4 text-sm">
                   <div className="font-semibold">Example:</div>
-                  <div>€49.40 + €1.80 = €51.20</div>
-                  <div className="text-success">✓ Player B deposits €51.20</div>
+                  <div>€49.40 + €3.60 = €53.00</div>
+                  <div className="text-success">✓ Player B deposits €53.00</div>
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@ const MathematicalBreakdown = () => {
               <h4 className="font-semibold mb-4 text-lg text-center">Total System Pool</h4>
               <div className="bg-muted p-4 rounded font-mono text-center">
                 <div className="text-xl font-bold">total_pool = deposit_A + deposit_B</div>
-                <div className="text-lg mt-2">€52.40 + €51.20 = €103.60</div>
+                <div className="text-lg mt-2">€54.20 + €53.00 = €107.20</div>
               </div>
               <div className="mt-4 text-center text-sm">
                 <div className="text-success font-semibold">This guarantees all payouts are covered!</div>
@@ -147,28 +147,28 @@ const MathematicalBreakdown = () => {
               <div className="bg-muted/50 p-6 rounded-lg">
                 <h4 className="font-semibold mb-4 text-lg text-center">Loser Recovery Formula</h4>
                 <div className="bg-muted p-4 rounded font-mono text-center space-y-2">
-                  <div className="text-lg font-bold">loser_recovery = own_stake + own_edge + opposite_stake</div>
+                  <div className="text-lg font-bold">loser_recovery = own_stake + full_edge + opposite_stake</div>
                   <div className="text-sm text-muted-foreground">Always gets back what they put in</div>
                 </div>
                 <div className="mt-4 text-sm text-center">
                   <div className="font-semibold">If Player B loses:</div>
-                  <div>€50.60 (own stake) + €1.80 (own edge) + €49.40 (A's stake) = €101.80</div>
+                  <div>€50.60 (own stake) + €3.60 (full edge) + €49.40 (A's stake) = €103.60</div>
                 </div>
               </div>
 
               <div className="grid lg:grid-cols-2 gap-8">
                 <div className="bg-primary/10 p-6 rounded-lg border-primary/30 border">
-                  <h4 className="font-semibold mb-4 text-lg">Winner's Edge Distribution</h4>
+                  <h4 className="font-semibold mb-4 text-lg">Total Edge Distribution</h4>
                   <div className="bg-muted p-4 rounded font-mono space-y-2 text-sm">
-                    <div><strong>platform_share = winner_edge × 0.33</strong></div>
-                    <div><strong>winner_bonus = winner_edge × winner_ratio × 0.67</strong></div>
-                    <div><strong>loser_bonus = winner_edge × loser_ratio × 0.67</strong></div>
+                    <div><strong>platform_share = total_edge × 0.33</strong></div>
+                    <div><strong>winner_bonus = total_edge × winner_ratio × 0.67</strong></div>
+                    <div><strong>loser_bonus = total_edge × loser_ratio × 0.67</strong></div>
                   </div>
                   <div className="mt-4 text-sm">
                     <div className="font-semibold">If A wins (A = 49.4%, B = 50.6%):</div>
-                    <div>• Platform: €1.80 × 0.33 = €0.59</div>
-                    <div>• A bonus: €1.80 × 0.494 × 0.67 = €0.60</div>
-                    <div>• B bonus: €1.80 × 0.506 × 0.67 = €0.61</div>
+                    <div>• Platform: €3.60 × 0.33 = €1.19</div>
+                    <div>• A bonus: €3.60 × 0.494 × 0.67 = €1.19</div>
+                    <div>• B bonus: €3.60 × 0.506 × 0.67 = €1.22</div>
                   </div>
                 </div>
 
@@ -180,9 +180,9 @@ const MathematicalBreakdown = () => {
                   </div>
                   <div className="mt-4 text-sm">
                     <div className="font-semibold">Final profits:</div>
-                    <div className="text-success">• Winner A: €0.60</div>
-                    <div className="text-success">• Loser B: €0.61</div>
-                    <div className="text-muted-foreground">• Platform: €0.59</div>
+                    <div className="text-success">• Winner A: €1.19</div>
+                    <div className="text-success">• Loser B: €1.22</div>
+                    <div className="text-muted-foreground">• Platform: €1.19</div>
                   </div>
                 </div>
               </div>
@@ -206,11 +206,11 @@ const MathematicalBreakdown = () => {
               </div>
 
               <div className="space-y-4">
-                <h4 className="font-semibold text-lg">Deposits</h4>
+                <div className="font-semibold text-lg">Deposits</div>
                 <div className="bg-muted p-4 rounded text-sm space-y-1">
-                  <div>A deposits: €50.60 + €1.80 = €52.40</div>
-                  <div>B deposits: €49.40 + €1.80 = €51.20</div>
-                  <div>Total pool: €103.60</div>
+                  <div>A deposits: €50.60 + €3.60 = €54.20</div>
+                  <div>B deposits: €49.40 + €3.60 = €53.00</div>
+                  <div>Total pool: €107.20</div>
                   <div>A bets: €49.40</div>
                   <div>B bets: €50.60</div>
                 </div>
@@ -220,12 +220,12 @@ const MathematicalBreakdown = () => {
                 <h4 className="font-semibold text-lg">If A Wins</h4>
                 <div className="bg-muted p-4 rounded text-sm space-y-1">
                   <div>A gets from bookmaker: €103.74</div>
-                  <div>A bonus: €0.60</div>
-                  <div>B recovery: €101.80</div>
-                  <div>B bonus: €0.61</div>
+                  <div>A bonus: €1.19</div>
+                  <div>B recovery: €103.60</div>
+                  <div>B bonus: €1.22</div>
                   <div className="border-t pt-2 text-success font-semibold">
-                    <div>A profit: €0.60</div>
-                    <div>B profit: €0.61</div>
+                    <div>A profit: €1.19</div>
+                    <div>B profit: €1.22</div>
                   </div>
                 </div>
               </div>

@@ -38,11 +38,11 @@ const PoolingSystemSection = () => {
                 
                 <div className="space-y-4">
                   <div className="bg-primary/10 p-4 rounded border-primary/30 border">
-                    <div className="font-semibold mb-2 text-center">Player A Deposits</div>
+                    <div className="font-semibold mb-2">Player A deposits:</div>
                     <div className="space-y-2 text-sm font-mono">
                       <div className="flex justify-between">
-                        <span>His edge:</span>
-                        <span>€1.80</span>
+                        <span>Full edge:</span>
+                        <span>€3.60</span>
                       </div>
                       <div className="flex justify-between">
                         <span>B's stake:</span>
@@ -50,7 +50,7 @@ const PoolingSystemSection = () => {
                       </div>
                       <div className="border-t pt-2 flex justify-between font-bold">
                         <span>Total:</span>
-                        <span>€52.40</span>
+                        <span>€54.20</span>
                       </div>
                     </div>
                   </div>
@@ -77,23 +77,23 @@ const PoolingSystemSection = () => {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="bg-success/10 p-4 rounded border-success/30 border">
-                    <div className="font-semibold mb-2 text-center">Total Deposits</div>
-                    <div className="space-y-2 text-sm font-mono">
-                      <div className="flex justify-between">
-                        <span>From A:</span>
-                        <span>€52.40</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>From B:</span>
-                        <span>€51.20</span>
-                      </div>
-                      <div className="border-t pt-2 flex justify-between font-bold">
-                        <span>Pool:</span>
-                        <span>€103.60</span>
+                    <div className="bg-success/10 p-4 rounded border-success/30 border">
+                      <div className="font-semibold mb-2 text-center">Total Deposits</div>
+                      <div className="space-y-2 text-sm font-mono">
+                        <div className="flex justify-between">
+                          <span>From A:</span>
+                          <span>€54.20</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>From B:</span>
+                          <span>€53.00</span>
+                        </div>
+                        <div className="border-t pt-2 flex justify-between font-bold">
+                          <span>Pool:</span>
+                          <span>€107.20</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   
                   <div className="text-center">
                     <div className="text-sm text-muted-foreground">Guarantees payouts</div>
@@ -115,8 +115,8 @@ const PoolingSystemSection = () => {
                     <div className="font-semibold mb-2 text-center">Player B Deposits</div>
                     <div className="space-y-2 text-sm font-mono">
                       <div className="flex justify-between">
-                        <span>His edge:</span>
-                        <span>€1.80</span>
+                        <span>Full edge:</span>
+                        <span>€3.60</span>
                       </div>
                       <div className="flex justify-between">
                         <span>A's stake:</span>
@@ -124,7 +124,7 @@ const PoolingSystemSection = () => {
                       </div>
                       <div className="border-t pt-2 flex justify-between font-bold">
                         <span>Total:</span>
-                        <span>€51.20</span>
+                        <span>€53.00</span>
                       </div>
                     </div>
                   </div>
@@ -156,9 +156,9 @@ const PoolingSystemSection = () => {
                   <div className="font-semibold mb-2">Winner (A) Gets:</div>
                   <div className="space-y-1 text-sm font-mono">
                     <div>• From bookmaker: €103.74</div>
-                    <div>• From winner's edge (62%): €0.62</div>
-                    <div><strong>Total return: €104.36</strong></div>
-                    <div className="text-success"><strong>Net profit: €4.96</strong></div>
+                    <div>• From profit pool: €1.19</div>
+                    <div><strong>Total return: €104.93</strong></div>
+                    <div className="text-success"><strong>Net profit: €5.53</strong></div>
                   </div>
                 </div>
                 
@@ -166,11 +166,11 @@ const PoolingSystemSection = () => {
                   <div className="font-semibold mb-2">Loser (B) Gets:</div>
                   <div className="space-y-1 text-sm font-mono">
                     <div>• His own stake back: €50.60</div>
-                    <div>• His deposited edge: €1.80</div>
+                    <div>• His deposited edge: €3.60</div>
                     <div>• A's stake he deposited: €49.40</div>
-                    <div>• From winner's edge (33%): €0.59</div>
-                    <div><strong>Total return: €102.39</strong></div>
-                    <div className="text-success"><strong>Net profit: €1.79</strong></div>
+                    <div>• From profit pool: €1.22</div>
+                    <div><strong>Total return: €104.82</strong></div>
+                    <div className="text-success"><strong>Net profit: €4.22</strong></div>
                   </div>
                 </div>
               </div>
@@ -185,9 +185,9 @@ const PoolingSystemSection = () => {
                   <div className="font-semibold mb-2">Winner (B) Gets:</div>
                   <div className="space-y-1 text-sm font-mono">
                     <div>• From bookmaker: €103.73</div>
-                    <div>• From winner's edge (58%): €0.64</div>
-                    <div><strong>Total return: €104.37</strong></div>
-                    <div className="text-success"><strong>Net profit: €3.77</strong></div>
+                    <div>• From profit pool: €1.22</div>
+                    <div><strong>Total return: €104.95</strong></div>
+                    <div className="text-success"><strong>Net profit: €4.35</strong></div>
                   </div>
                 </div>
                 
@@ -195,11 +195,11 @@ const PoolingSystemSection = () => {
                   <div className="font-semibold mb-2">Loser (A) Gets:</div>
                   <div className="space-y-1 text-sm font-mono">
                     <div>• His own stake back: €49.40</div>
-                    <div>• His deposited edge: €1.80</div>
+                    <div>• His deposited edge: €3.60</div>
                     <div>• B's stake he deposited: €50.60</div>
-                    <div>• From winner's edge (35%): €0.56</div>
-                    <div><strong>Total return: €102.36</strong></div>
-                    <div className="text-success"><strong>Net profit: €2.96</strong></div>
+                    <div>• From profit pool: €1.19</div>
+                    <div><strong>Total return: €104.79</strong></div>
+                    <div className="text-success"><strong>Net profit: €5.39</strong></div>
                   </div>
                 </div>
               </div>
@@ -213,13 +213,13 @@ const PoolingSystemSection = () => {
               <div className="text-center space-y-2">
                 <h4 className="font-semibold">Deposit Amount</h4>
                 <div className="bg-muted p-3 rounded font-mono text-sm">
-                  Opposite Stake + Own Edge
+                  Opposite Stake + Full Edge
                 </div>
               </div>
               <div className="text-center space-y-2">
                 <h4 className="font-semibold">Loser Recovery</h4>
                 <div className="bg-muted p-3 rounded font-mono text-sm">
-                  Own Stake + Own Edge + Opposite Stake
+                  Own Stake + Full Edge + Opposite Stake
                 </div>
               </div>
               <div className="text-center space-y-2">

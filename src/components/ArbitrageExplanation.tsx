@@ -59,7 +59,7 @@ const ArbitrageExplanation = () => {
                 <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center mx-auto">4</div>
                 <h4 className="font-semibold">Deposits Calculated</h4>
                 <div className="bg-muted p-3 rounded text-sm font-mono">
-                  Edge: €3.60<br/>Each: €1.80
+                  Edge: €3.60<br/>Each: €3.60
                 </div>
                 <ArrowDown className="w-6 h-6 text-muted-foreground mx-auto" />
               </div>
@@ -82,18 +82,18 @@ const ArbitrageExplanation = () => {
                   <div className="bg-card p-4 rounded border">
                     <div className="font-semibold mb-2">Player A deposits:</div>
                     <div className="space-y-1 text-sm font-mono">
-                      <div>• Own edge: €1.80</div>
+                      <div>• Full edge: €3.60</div>
                       <div>• Player B's stake: €50.60</div>
-                      <div><strong>Total: €52.40</strong></div>
+                      <div><strong>Total: €54.20</strong></div>
                     </div>
                   </div>
                   
                   <div className="bg-card p-4 rounded border">
                     <div className="font-semibold mb-2">Player B deposits:</div>
                     <div className="space-y-1 text-sm font-mono">
-                      <div>• Own edge: €1.80</div>
+                      <div>• Full edge: €3.60</div>
                       <div>• Player A's stake: €49.40</div>
-                      <div><strong>Total: €51.20</strong></div>
+                      <div><strong>Total: €53.00</strong></div>
                     </div>
                   </div>
                 </div>
@@ -138,9 +138,9 @@ const ArbitrageExplanation = () => {
                     <div>• Player A gets €103.74 from bookmaker</div>
                     <div>• Player B gets back from system:</div>
                     <div className="ml-4 font-mono">- His own stake: €50.60</div>
-                    <div className="ml-4 font-mono">- His deposited edge: €1.80</div>
+                    <div className="ml-4 font-mono">- His deposited edge: €3.60</div>
                     <div className="ml-4 font-mono">- A's stake he deposited: €49.40</div>
-                    <div className="ml-4 font-mono"><strong>Total: €101.80</strong></div>
+                    <div className="ml-4 font-mono"><strong>Total: €103.60</strong></div>
                   </div>
                 </div>
               </div>
@@ -153,15 +153,15 @@ const ArbitrageExplanation = () => {
                 </div>
                 
                 <div className="bg-primary/10 p-4 rounded border-primary/30 border">
-                  <div className="font-semibold mb-2">Winner's Edge (€1.80) Split:</div>
+                  <div className="font-semibold mb-2">Full Edge (€3.60) Split:</div>
                   <div className="space-y-1 text-sm font-mono">
-                    <div>• Platform (33%): €0.59</div>
-                    <div>• Winner gets (49.4%): €0.62</div>
-                    <div>• Loser gets (17.6%): €0.59</div>
+                    <div>• Platform (33%): €1.19</div>
+                    <div>• Winner gets (49.4%): €1.19</div>
+                    <div>• Loser gets (50.6%): €1.22</div>
                   </div>
                   <div className="mt-3 pt-3 border-t">
                     <div className="font-semibold">Final Profits:</div>
-                    <div className="text-sm">Winner: €0.62 | Loser: €0.59</div>
+                    <div className="text-sm">Winner: €1.19 | Loser: €1.22</div>
                   </div>
                 </div>
               </div>
