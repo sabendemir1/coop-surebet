@@ -3,6 +3,7 @@ import ArbitrageExplanation from "@/components/ArbitrageExplanation";
 import PoolingSystemSection from "@/components/PoolingSystemSection";
 import MathematicalBreakdown from "@/components/MathematicalBreakdown";
 import HowItWorksSection from "@/components/HowItWorksSection";
+import ExecutionProtocolSection from "@/components/ExecutionProtocolSection";
 import ProfitCalculator from "@/components/ProfitCalculator";
 import InvestorSection from "@/components/InvestorSection";
 import BenefitsSection from "@/components/BenefitsSection";
@@ -16,6 +17,7 @@ const Info = () => {
       <PoolingSystemSection />
       <MathematicalBreakdown />
       <HowItWorksSection />
+      <ExecutionProtocolSection />
       <ProfitCalculator />
       <InvestorSection />
       <BenefitsSection />
