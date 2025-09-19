@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, TrendingUp, DollarSign, Clock, Info, Plus } from "lucide-react";
+import { ArrowRight, TrendingUp, DollarSign, Clock, Info, Plus, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ArbitrageOpportunity from "@/components/ArbitrageOpportunity";
 import AddArbitrageDialog from "@/components/AddArbitrageDialog";
+import FilterDialog from "@/components/FilterDialog";
 
 // Mock data generator for arbitrage opportunities
 const generateArbitrageOpportunities = () => {
@@ -62,6 +63,16 @@ const Dashboard = () => {
   const [userBookmaker, setUserBookmaker] = useState("");
   const [opportunities, setOpportunities] = useState(generateArbitrageOpportunities());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    sport: "all",
+    minTime: "",
+    maxTime: "",
+    minProfitMargin: "",
+    maxProfitMargin: "",
+    minPoolSize: "",
+    maxPoolSize: ""
+  });
 
   useEffect(() => {
     const name = localStorage.getItem("userName");
@@ -87,10 +98,36 @@ const Dashboard = () => {
     setIsAddDialogOpen(false);
   };
 
-  const filteredOpportunities = opportunities.filter(opp => 
-    opp.bookmakerA.toLowerCase().includes(userBookmaker.toLowerCase()) || 
-    opp.bookmakerB.toLowerCase().includes(userBookmaker.toLowerCase())
-  );
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  const filteredOpportunities = opportunities.filter(opp => {
+    // Basic bookmaker filter
+    const bookmakerMatch = opp.bookmakerA.toLowerCase().includes(userBookmaker.toLowerCase()) || 
+                          opp.bookmakerB.toLowerCase().includes(userBookmaker.toLowerCase());
+    
+    if (!bookmakerMatch) return false;
+
+    // Sport filter
+    if (filters.sport !== "all" && opp.sport !== filters.sport) return false;
+
+    // Time filter (convert seconds to minutes)
+    const timeInMinutes = Math.floor(opp.expiresIn / 60);
+    if (filters.minTime && timeInMinutes < parseInt(filters.minTime)) return false;
+    if (filters.maxTime && timeInMinutes > parseInt(filters.maxTime)) return false;
+
+    // Calculate profit margin for filtering
+    const profitMargin = (1 - (1/opp.oddA + 1/opp.oddB)) * 100;
+    if (filters.minProfitMargin && profitMargin < parseFloat(filters.minProfitMargin)) return false;
+    if (filters.maxProfitMargin && profitMargin > parseFloat(filters.maxProfitMargin)) return false;
+
+    // Pool size filter
+    if (filters.minPoolSize && opp.totalPool < parseInt(filters.minPoolSize)) return false;
+    if (filters.maxPoolSize && opp.totalPool > parseInt(filters.maxPoolSize)) return false;
+
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -131,10 +168,16 @@ const Dashboard = () => {
               Risk-free betting opportunities matching your bookmaker account
             </p>
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add Arbitrage
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setIsFilterDialogOpen(true)} className="flex items-center gap-2">
+              <Filter className="w-4 h-4" />
+              Filter
+            </Button>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add Arbitrage
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -205,6 +248,13 @@ const Dashboard = () => {
         onOpenChange={setIsAddDialogOpen}
         onAddArbitrage={handleAddArbitrage}
         userBookmaker={userBookmaker}
+      />
+
+      <FilterDialog
+        open={isFilterDialogOpen}
+        onOpenChange={setIsFilterDialogOpen}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={filters}
       />
     </div>
   );
