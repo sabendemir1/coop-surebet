@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, Upload, Calculator, DollarSign, Clock, CheckCircle } from "lucide-react";
+import { ArrowRight, Upload, Calculator, DollarSign, Clock, CheckCircle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ArbitrageOpportunityProps {
@@ -30,6 +30,12 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
   const [proofUploaded, setProofUploaded] = useState(false);
   const [depositStatus, setDepositStatus] = useState<'none' | 'waiting' | 'complete'>('none');
   const { toast } = useToast();
+
+  // Convert bookmaker name to website URL
+  const getBookmakerURL = (bookmakerName: string) => {
+    const name = bookmakerName.toLowerCase().replace(/\s+/g, '');
+    return `https://${name}.com`;
+  };
 
   const { teamA, teamB, sport, bookmakerA, bookmakerB, oddA, oddB, totalPool } = opportunity;
   
@@ -125,7 +131,18 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-medium">{teamA} Win</p>
-                <p className="text-sm text-muted-foreground">{bookmakerA}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">{bookmakerA}</p>
+                  <a 
+                    href={getBookmakerURL(bookmakerA)} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-muted/50 hover:bg-muted rounded border transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    {bookmakerA.toLowerCase().replace(/\s+/g, '')}.com
+                  </a>
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-lg font-bold">@{oddA}</p>
@@ -140,7 +157,18 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-medium">{teamB} Win</p>
-                <p className="text-sm text-muted-foreground">{bookmakerB}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">{bookmakerB}</p>
+                  <a 
+                    href={getBookmakerURL(bookmakerB)} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-muted/50 hover:bg-muted rounded border transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    {bookmakerB.toLowerCase().replace(/\s+/g, '')}.com
+                  </a>
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-lg font-bold">@{oddB}</p>
