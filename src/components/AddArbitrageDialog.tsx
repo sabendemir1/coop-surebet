@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 interface AddArbitrageDialogProps {
@@ -15,6 +16,7 @@ interface AddArbitrageDialogProps {
 const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker }: AddArbitrageDialogProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
+    sport: "",
     teamA: "",
     teamB: "",
     oddA: "",
@@ -23,6 +25,11 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
     poolSize: "",
     remainingTime: ""
   });
+
+  const sports = [
+    { value: "Football", label: "Football" },
+    { value: "Basketball", label: "Basketball" }
+  ];
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -58,7 +65,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       matchId: `match_manual_${Date.now()}`,
       teamA: formData.teamA,
       teamB: formData.teamB,
-      sport: "Manual Entry",
+      sport: formData.sport,
       bookmakerA: userBookmaker,
       bookmakerB: formData.bookmakerB,
       oddA: oddA,
@@ -72,6 +79,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
     
     // Reset form
     setFormData({
+      sport: "",
       teamA: "",
       teamB: "",
       oddA: "",
@@ -100,6 +108,22 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="sport">Sport</Label>
+            <Select value={formData.sport} onValueChange={(value) => handleInputChange("sport", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a sport" />
+              </SelectTrigger>
+              <SelectContent>
+                {sports.map((sport) => (
+                  <SelectItem key={sport.value} value={sport.value}>
+                    {sport.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="teamA">Team A</Label>
@@ -208,7 +232,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
             <Button 
               type="submit" 
               className="flex-1"
-              disabled={!formData.teamA || !formData.teamB || !formData.oddA || !formData.oddB || !formData.bookmakerB || !formData.poolSize || !formData.remainingTime}
+              disabled={!formData.sport || !formData.teamA || !formData.teamB || !formData.oddA || !formData.oddB || !formData.bookmakerB || !formData.poolSize || !formData.remainingTime}
             >
               Add Arbitrage
             </Button>
