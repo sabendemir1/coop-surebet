@@ -1,8 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Shield, Target, BarChart3, ArrowRight } from "lucide-react";
-import profitDistribution from "@/assets/profit-distribution.jpg";
+import { TrendingUp, Shield, Target, BarChart3, ArrowRight, Users, DollarSign } from "lucide-react";
 
 const InvestorSection = () => {
   return (
@@ -76,13 +75,64 @@ const InvestorSection = () => {
           </div>
 
           <div className="space-y-8">
-            <div className="relative">
-              <img 
-                src={profitDistribution} 
-                alt="Profit Distribution Model" 
-                className="w-full rounded-lg shadow-elegant"
-              />
-            </div>
+            {/* Profit Distribution Visual */}
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold mb-6 text-center flex items-center justify-center gap-2">
+                <DollarSign className="w-6 h-6 text-profit" />
+                Profit Distribution Model
+              </h3>
+              
+              <div className="space-y-6">
+                {/* Visual Flow */}
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="space-y-2">
+                    <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center mx-auto">€100</div>
+                    <div className="text-sm font-semibold">Total Pool</div>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <ArrowRight className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="w-16 h-16 rounded-full bg-success text-success-foreground font-bold text-lg flex items-center justify-center mx-auto">€3.60</div>
+                    <div className="text-sm font-semibold">Profit</div>
+                  </div>
+                </div>
+
+                {/* Distribution Breakdown */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-primary/10 rounded border-primary/30 border">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-primary" />
+                      <span className="font-semibold">Players (67%)</span>
+                    </div>
+                    <span className="font-bold text-primary">€2.41</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 bg-profit/10 rounded border-profit/30 border">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-profit" />
+                      <span className="font-semibold">Platform (33%)</span>
+                    </div>
+                    <span className="font-bold text-profit">€1.19</span>
+                  </div>
+                </div>
+
+                {/* Per Player Breakdown */}
+                <div className="bg-muted p-4 rounded">
+                  <div className="text-sm text-center mb-3 font-semibold">Player Distribution Example</div>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-card p-2 rounded">
+                      <div className="font-semibold">Winner (49.4%)</div>
+                      <div>Gets: €1.19</div>
+                    </div>
+                    <div className="bg-card p-2 rounded">
+                      <div className="font-semibold">Loser (50.6%)</div>
+                      <div>Gets: €1.22</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
 
             <Card className="p-6 bg-profit/10 border-profit/30">
               <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-profit">
