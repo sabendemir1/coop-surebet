@@ -19,55 +19,46 @@ interface ExecutionDialogProps {
 }
 
 const ExecutionDialog = ({ isOpen, onClose, onComplete, opportunity }: ExecutionDialogProps) => {
-  const [countdown, setCountdown] = useState(60); // 60 seconds
   const [isExecuting, setIsExecuting] = useState(false);
   const [executed, setExecuted] = useState(false);
+  const [opponentReady, setOpponentReady] = useState(Math.random() > 0.5); // 50/50 chance
+  const [userReady, setUserReady] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!isOpen) {
-      setCountdown(60);
       setIsExecuting(false);
       setExecuted(false);
+      setOpponentReady(Math.random() > 0.5); // Reset opponent readiness 50/50
+      setUserReady(true);
       return;
     }
 
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          // Auto-cancel if timeout
-          toast({
-            title: "Execution Timeout",
-            description: "Bet execution window closed. Match cancelled with full refund.",
-            variant: "destructive",
-          });
-          setTimeout(() => onClose(), 2000);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    // If opponent is not ready, make them ready after 2 seconds
+    if (!opponentReady) {
+      const timer = setTimeout(() => {
+        setOpponentReady(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, opponentReady]);
 
-    return () => clearInterval(timer);
-  }, [isOpen, onClose, toast]);
-
-  const handleExecute = () => {
+  const handleComplete = () => {
     setIsExecuting(true);
     
-    // Simulate bet execution
+    // Simulate bet completion
     setTimeout(() => {
       setExecuted(true);
       setIsExecuting(false);
       toast({
-        title: "Bet Executed Successfully!",
-        description: `Deposit of $${opportunity.depositAmount.toFixed(2)} processed. Awaiting match result.`,
+        title: "Bet Completed Successfully!",
+        description: `Your bet of $${opportunity.stakeAmount.toFixed(2)} has been placed. Awaiting match result.`,
       });
       
       setTimeout(() => {
         onComplete();
       }, 2000);
-    }, 2000);
+    }, 1500);
   };
 
   const formatTime = (seconds: number) => {
@@ -87,31 +78,42 @@ const ExecutionDialog = ({ isOpen, onClose, onComplete, opportunity }: Execution
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Countdown */}
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full border-4 border-orange-500 bg-orange-100 flex items-center justify-center">
-              <div className="text-xl font-bold text-orange-600">
-                {countdown}
+          {/* Player Status */}
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="font-semibold text-green-700">You</span>
               </div>
+              <p className="text-sm text-green-600">Ready to execute</p>
             </div>
-            <p className="text-lg font-semibold">Execute Your Bet Immediately!</p>
-            <p className="text-sm text-muted-foreground">
-              {formatTime(countdown)} remaining
-            </p>
+            <div className={`p-3 rounded-lg ${opponentReady ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+              <div className="flex items-center justify-center gap-2 mb-1">
+                {opponentReady ? (
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                )}
+                <span className={`font-semibold ${opponentReady ? 'text-green-700' : 'text-yellow-700'}`}>Opponent</span>
+              </div>
+              <p className={`text-sm ${opponentReady ? 'text-green-600' : 'text-yellow-600'}`}>
+                {opponentReady ? 'Ready to execute' : 'Getting ready...'}
+              </p>
+            </div>
           </div>
 
-          {/* Critical Alert */}
-          <Alert className="border-red-200 bg-red-50">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800 font-medium">
-              <strong>CRITICAL:</strong> Confirm your bet on {opportunity.userBookmaker} NOW! 
-              Both players must execute within 60 seconds.
+          {/* Deposit Confirmation */}
+          <Alert className="border-blue-200 bg-blue-50">
+            <CheckCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800 font-medium">
+              <strong>DEPOSIT PROCESSED:</strong> Your ${opportunity.depositAmount.toFixed(2)} deposit has been secured. 
+              Now place your bet on {opportunity.userBookmaker}.
             </AlertDescription>
           </Alert>
 
           {/* Bet Details */}
           <div className="bg-muted/50 rounded-lg p-4">
-            <h3 className="font-semibold mb-3">Confirm These Details:</h3>
+            <h3 className="font-semibold mb-3">Place This Bet Now:</h3>
             
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -126,19 +128,19 @@ const ExecutionDialog = ({ isOpen, onClose, onComplete, opportunity }: Execution
                 <span className="text-muted-foreground">Bet Amount:</span>
                 <span className="font-bold text-success">${opportunity.stakeAmount.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between border-t pt-2">
-                <span className="text-muted-foreground">Total Deposit:</span>
-                <span className="font-bold text-profit text-lg">${opportunity.depositAmount.toFixed(2)}</span>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Bookmaker:</span>
+                <span className="font-bold">{opportunity.userBookmaker}</span>
               </div>
             </div>
           </div>
 
-          {/* Execution Status */}
+          {/* Completion Status */}
           {executed ? (
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                <strong>Success!</strong> Your bet has been executed and deposit processed.
+                <strong>Success!</strong> Your bet has been placed. Awaiting match result.
               </AlertDescription>
             </Alert>
           ) : (
@@ -146,30 +148,26 @@ const ExecutionDialog = ({ isOpen, onClose, onComplete, opportunity }: Execution
               variant="default" 
               size="lg"
               className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-lg py-6"
-              onClick={handleExecute}
-              disabled={isExecuting || countdown <= 0}
+              onClick={handleComplete}
+              disabled={isExecuting || !opponentReady}
             >
               {isExecuting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Processing Deposit...
+                  Confirming bet placement...
+                </>
+              ) : !opponentReady ? (
+                <>
+                  <Clock className="w-5 h-5 mr-2" />
+                  Waiting for opponent...
                 </>
               ) : (
                 <>
-                  <Zap className="w-5 h-5 mr-2" />
-                  EXECUTE BET & DEPOSIT ${opportunity.depositAmount.toFixed(2)}
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  I finished my bet
                 </>
               )}
             </Button>
-          )}
-
-          {countdown <= 0 && !executed && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                Execution window expired. Match cancelled with full refund.
-              </AlertDescription>
-            </Alert>
           )}
         </div>
       </DialogContent>
