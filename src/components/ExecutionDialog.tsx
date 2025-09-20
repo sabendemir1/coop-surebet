@@ -128,7 +128,7 @@ const ExecutionDialog = ({ isOpen, onClose, onComplete, opportunity }: Execution
               </div>
               <div className="flex justify-between border-t pt-2">
                 <span className="text-muted-foreground">Total Deposit:</span>
-                <span className="font-bold text-profit">${opportunity.depositAmount.toFixed(2)}</span>
+                <span className="font-bold text-profit text-lg">${opportunity.depositAmount.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -152,12 +152,12 @@ const ExecutionDialog = ({ isOpen, onClose, onComplete, opportunity }: Execution
               {isExecuting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Processing Bet...
+                  Processing Deposit...
                 </>
               ) : (
                 <>
                   <Zap className="w-5 h-5 mr-2" />
-                  EXECUTE BET NOW - ${opportunity.depositAmount.toFixed(2)}
+                  EXECUTE BET & DEPOSIT ${opportunity.depositAmount.toFixed(2)}
                 </>
               )}
             </Button>

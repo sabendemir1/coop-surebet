@@ -62,10 +62,6 @@ const PreparationScreen = ({ isOpen, onClose, onReady, opportunity }: Preparatio
     onReady();
   };
 
-  const handleSkip = () => {
-    setCountdown(0);
-    handleReady();
-  };
 
   const getBookmakerURL = (bookmakerName: string) => {
     const name = bookmakerName.toLowerCase().replace(/\s+/g, '');
@@ -170,6 +166,15 @@ const PreparationScreen = ({ isOpen, onClose, onReady, opportunity }: Preparatio
                     <p className="font-bold text-xl text-success">${opportunity.stakeAmount.toFixed(2)}</p>
                   </div>
                   <div>
+                    <p className="text-sm text-muted-foreground">Total Deposit:</p>
+                    <p className="font-bold text-xl text-profit">${(opportunity.stakeAmount * 2).toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <p className="text-sm text-muted-foreground">Bookmaker:</p>
                     <div className="flex items-center gap-2">
                       <p className="font-semibold">{opportunity.userBookmaker}</p>
@@ -183,6 +188,10 @@ const PreparationScreen = ({ isOpen, onClose, onReady, opportunity }: Preparatio
                         Open Site
                       </a>
                     </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Action Required:</p>
+                    <p className="font-medium text-orange-600">Prepare bet slip only</p>
                   </div>
                 </div>
               </div>
@@ -202,14 +211,12 @@ const PreparationScreen = ({ isOpen, onClose, onReady, opportunity }: Preparatio
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <Button variant="outline" onClick={handleSkip} disabled={userReady}>
-              Skip Wait
-            </Button>
             <Button 
               variant="default" 
               className="flex-1" 
               onClick={handleReady}
               disabled={userReady}
+              size="lg"
             >
               {userReady ? (
                 <>
@@ -217,7 +224,7 @@ const PreparationScreen = ({ isOpen, onClose, onReady, opportunity }: Preparatio
                   Ready - Waiting for opponent
                 </>
               ) : (
-                "I'm Ready to Execute"
+                `Execute Bet & Deposit $${(opportunity.stakeAmount * 2).toFixed(2)}`
               )}
             </Button>
           </div>

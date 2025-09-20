@@ -252,7 +252,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 <Lock className="w-4 h-4 mr-2" />
-                Lock Position
+                Lock Position (Deposit ${depositAmount.toFixed(2)})
               </Button>
             )}
           </>
