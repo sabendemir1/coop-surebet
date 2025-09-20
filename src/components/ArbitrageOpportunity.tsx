@@ -220,13 +220,20 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
               <span className="text-sm">Your Odds:</span>
               <span className="font-medium">@{userOdd}</span>
             </div>
-            <div className="flex justify-between border-t pt-2">
-              <span className="text-sm">Amount to Play:</span>
+            <div className="flex justify-between">
+              <span className="text-sm">Bet Amount:</span>
               <span className="font-bold text-success">${stakeAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm">Your Investment:</span>
-              <span className="font-bold text-profit">${stakeAmount.toFixed(2)}</span>
+              <span className="text-sm">Total Deposit:</span>
+              <span className="font-bold text-profit">${depositAmount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between border-t pt-2">
+              <span className="text-sm">Your Profit:</span>
+              <span className="font-bold text-success">
+                ${((totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)} 
+                (+{userProfitShare}%)
+              </span>
             </div>
           </div>
         </div>
@@ -249,10 +256,16 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
                 variant="default" 
                 size="lg"
                 onClick={handleLock}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
+                className="bg-orange-600 hover:bg-orange-700 text-white flex flex-col items-center py-3"
               >
-                <Lock className="w-4 h-4 mr-2" />
-                Lock Position (Deposit ${depositAmount.toFixed(2)})
+                <div className="flex items-center">
+                  <Lock className="w-4 h-4 mr-2" />
+                  Lock Position
+                </div>
+                <div className="text-xs mt-1 opacity-90">
+                  Bet: ${stakeAmount.toFixed(2)} | Deposit: ${depositAmount.toFixed(2)} | 
+                  Profit: ${((totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
+                </div>
               </Button>
             )}
           </>

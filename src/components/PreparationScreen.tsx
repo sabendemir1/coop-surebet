@@ -96,6 +96,14 @@ const PreparationScreen = ({ isOpen, onClose, onReady, opportunity }: Preparatio
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Critical Odds Warning */}
+          <Alert className="border-red-200 bg-red-50">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              <strong className="text-lg">IMPORTANT: If the odds on your bookmaker are lower than @{opportunity.userOdd}, please cancel immediately!</strong>
+            </AlertDescription>
+          </Alert>
+
           {/* Warning Alert */}
           <Alert className="border-orange-200 bg-orange-50">
             <AlertTriangle className="h-4 w-4 text-orange-600" />
