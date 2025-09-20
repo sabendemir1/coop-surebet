@@ -18,6 +18,10 @@ interface MatchmakingDialogProps {
     userTeam: string;
     userBookmaker: string;
     userOdd: number;
+    stakeAmount: number;
+    depositAmount: number;
+    profitAmount: number;
+    userProfitMargin: string;
   };
 }
 
@@ -119,9 +123,27 @@ const MatchmakingDialog = ({ isOpen, onClose, onMatchFound, opportunity }: Match
                 <span className="font-bold">@{opportunity.userOdd}</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="text-sm text-muted-foreground">Profit Margin:</span>
+                <span className="text-sm text-muted-foreground">Bet Amount:</span>
+                <span className="font-bold text-success">${opportunity.stakeAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Total Deposit:</span>
+                <span className="font-bold text-profit">${opportunity.depositAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Your Profit:</span>
+                <span className="font-bold text-success">${opportunity.profitAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between border-t pt-2">
+                <span className="text-sm text-muted-foreground">Total Profit Margin:</span>
                 <Badge variant="secondary" className="bg-success/20 text-success">
                   +{opportunity.profitMargin}%
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Your Profit Margin:</span>
+                <Badge variant="secondary" className="bg-success/20 text-success">
+                  +{opportunity.userProfitMargin}%
                 </Badge>
               </div>
             </div>

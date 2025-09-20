@@ -256,16 +256,10 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
                 variant="default" 
                 size="lg"
                 onClick={handleLock}
-                className="bg-orange-600 hover:bg-orange-700 text-white flex flex-col items-center py-3"
+                className="bg-orange-600 hover:bg-orange-700 text-white"
               >
-                <div className="flex items-center">
-                  <Lock className="w-4 h-4 mr-2" />
-                  Lock Position
-                </div>
-                <div className="text-xs mt-1 opacity-90">
-                  Bet: ${stakeAmount.toFixed(2)} | Deposit: ${depositAmount.toFixed(2)} | 
-                  Profit: ${((totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
-                </div>
+                <Lock className="w-4 h-4 mr-2" />
+                Lock Position
               </Button>
             )}
           </>
@@ -322,6 +316,10 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
           userTeam,
           userBookmaker: userBookmakerName,
           userOdd,
+          stakeAmount,
+          depositAmount,
+          profitAmount: ((totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67),
+          userProfitMargin: userProfitShare,
         }}
       />
 
