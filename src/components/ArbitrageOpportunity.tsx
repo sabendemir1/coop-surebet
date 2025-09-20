@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowRight, Upload, Calculator, DollarSign, Clock, CheckCircle, ExternalLink } from "lucide-react";
+import { ArrowRight, Calculator, Clock, Lock, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import MatchmakingDialog from "./MatchmakingDialog";
+import PreparationScreen from "./PreparationScreen";
+import ExecutionDialog from "./ExecutionDialog";
 
 interface ArbitrageOpportunityProps {
   opportunity: {
@@ -26,9 +27,10 @@ interface ArbitrageOpportunityProps {
 
 const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportunityProps) => {
   const [showDetails, setShowDetails] = useState(false);
-  const [customAmount, setCustomAmount] = useState("");
-  const [proofUploaded, setProofUploaded] = useState(false);
-  const [depositStatus, setDepositStatus] = useState<'none' | 'waiting' | 'complete'>('none');
+  const [isMatchmakingOpen, setIsMatchmakingOpen] = useState(false);
+  const [isPreparationOpen, setIsPreparationOpen] = useState(false);
+  const [isExecutionOpen, setIsExecutionOpen] = useState(false);
+  const [gameStatus, setGameStatus] = useState<'none' | 'matched' | 'preparing' | 'executing' | 'complete'>('none');
   const { toast } = useToast();
 
   // Convert bookmaker name to website URL
@@ -72,29 +74,41 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleDeposit = () => {
-    setDepositStatus('waiting');
-    toast({
-      title: "Deposit Initiated",
-      description: `Depositing $${depositAmount.toFixed(2)} - Waiting for other player`,
-    });
-    
-    // Simulate matching with another player after 5 seconds
-    setTimeout(() => {
-      setDepositStatus('complete');
-      toast({
-        title: "Match Found!",
-        description: "Both players have placed their bets. Good luck!",
-      });
-    }, 5000);
+  const handleLock = () => {
+    setIsMatchmakingOpen(true);
+    setGameStatus('none');
   };
 
-  const handleProofUpload = () => {
-    setProofUploaded(true);
+  const handleMatchFound = () => {
+    setIsMatchmakingOpen(false);
+    setIsPreparationOpen(true);
+    setGameStatus('matched');
     toast({
-      title: "Proof Uploaded",
-      description: "Bet verification successful. Awaiting match result.",
+      title: "Match Found!",
+      description: "Opponent found! Prepare your bet slip now.",
     });
+  };
+
+  const handleReady = () => {
+    setIsPreparationOpen(false);
+    setIsExecutionOpen(true);
+    setGameStatus('executing');
+  };
+
+  const handleExecutionComplete = () => {
+    setIsExecutionOpen(false);
+    setGameStatus('complete');
+    toast({
+      title: "Arbitrage Complete!",
+      description: "Both bets executed successfully. Awaiting match result.",
+    });
+  };
+
+  const handleCloseDialogs = () => {
+    setIsMatchmakingOpen(false);
+    setIsPreparationOpen(false);
+    setIsExecutionOpen(false);
+    setGameStatus('none');
   };
 
   return (
@@ -182,15 +196,19 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
 
         {/* Your Action Panel */}
         <div className={`p-4 rounded-lg border ${
-          depositStatus === 'none' ? 'bg-gradient-profit/10 border-profit/20' :
-          depositStatus === 'waiting' ? 'bg-yellow-100 border-yellow-300' :
-          'bg-green-100 border-green-300'
+          gameStatus === 'none' ? 'bg-gradient-profit/10 border-profit/20' :
+          gameStatus === 'matched' ? 'bg-blue-100 border-blue-300' :
+          gameStatus === 'executing' ? 'bg-orange-100 border-orange-300' :
+          gameStatus === 'complete' ? 'bg-green-100 border-green-300' :
+          'bg-yellow-100 border-yellow-300'
         }`}>
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Calculator className="w-4 h-4" />
-            {depositStatus === 'none' ? `Your Position: ${userTeam}` :
-             depositStatus === 'waiting' ? 'Waiting for other player...' :
-             'Both players bet!'}
+            {gameStatus === 'none' ? `Your Position: ${userTeam}` :
+             gameStatus === 'matched' ? 'Match found - Preparing...' :
+             gameStatus === 'executing' ? 'Executing bets...' :
+             gameStatus === 'complete' ? 'Arbitrage Complete!' :
+             'Finding opponent...'}
           </h4>
           
           <div className="space-y-3">
@@ -216,95 +234,51 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        <Button 
-          variant="hero" 
-          className="flex-1"
-          onClick={() => setShowDetails(!showDetails)}
-        >
-          {showDetails ? 'Hide Details' : 'Play'}
-          <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
+        {gameStatus === 'none' ? (
+          <>
+            <Button 
+              variant="hero" 
+              className="flex-1"
+              onClick={() => setShowDetails(!showDetails)}
+            >
+              {showDetails ? 'Hide Details' : 'View Details'}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            {showDetails && (
+              <Button 
+                variant="default" 
+                size="lg"
+                onClick={handleLock}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                Lock Position
+              </Button>
+            )}
+          </>
+        ) : (
+          <Button variant="outline" className="flex-1" disabled>
+            {gameStatus === 'matched' ? 'Preparing Bet...' :
+             gameStatus === 'executing' ? 'Executing...' :
+             gameStatus === 'complete' ? 'Complete ✓' :
+             'In Progress...'}
+          </Button>
+        )}
       </div>
 
       {/* Expanded Details */}
-      {showDetails && (
+      {showDetails && gameStatus === 'none' && (
         <div className="mt-6 pt-6 border-t space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Deposit Section */}
-            <div className="space-y-4">
-              <h5 className="font-semibold flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                Step 1: Secure Your Position
-              </h5>
-              
-              <div className="space-y-3">
-                <div className="p-3 bg-background rounded border">
-                  <Label className="text-sm">Required Deposit</Label>
-                  <p className="text-lg font-bold text-profit">${depositAmount.toFixed(2)}</p>
-                </div>
-                
-                <Button 
-                  variant="profit" 
-                  className="w-full" 
-                  size="lg"
-                  onClick={handleDeposit}
-                >
-                  Deposit ${depositAmount.toFixed(2)}
-                </Button>
-              </div>
-            </div>
-
-            {/* Proof Section */}
-            <div className="space-y-4">
-              <h5 className="font-semibold flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Step 2: Upload Bet Proof
-              </h5>
-              
-              <div className="space-y-3">
-                <div className="p-3 bg-background rounded border">
-                  <Label className="text-sm">Bet Amount on {userBookmakerName}</Label>
-                  <p className="text-lg font-bold text-success">${stakeAmount.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Bet on: {userTeam} @ {userOdd}
-                  </p>
-                </div>
-                
-                {!proofUploaded ? (
-                  <Button 
-                    variant="success" 
-                    className="w-full" 
-                    size="lg"
-                    onClick={handleProofUpload}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Screenshot/Proof
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="success" 
-                    className="w-full" 
-                    size="lg"
-                    disabled
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Proof Verified
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Guaranteed Returns */}
           <div className="bg-success/10 p-4 rounded-lg border border-success/20">
-            <h5 className="font-semibold text-success mb-2">Guaranteed Returns</h5>
+            <h5 className="font-semibold text-success mb-2">Expected Returns</h5>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Your Investment:</p>
                 <p className="font-bold">${stakeAmount.toFixed(2)}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Guaranteed Return:</p>
+                <p className="text-muted-foreground">Expected Return:</p>
                 <p className="font-bold text-success">
                   ${(stakeAmount + (totalPool * parseFloat(profitMargin) / 100) * userStakeRatio * 0.67).toFixed(2)}
                 </p>
@@ -319,6 +293,53 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
           </div>
         </div>
       )}
+
+      {/* Dialogs */}
+      <MatchmakingDialog
+        isOpen={isMatchmakingOpen}
+        onClose={handleCloseDialogs}
+        onMatchFound={handleMatchFound}
+        opportunity={{
+          teamA,
+          teamB,
+          sport,
+          oddA,
+          oddB,
+          profitMargin,
+          userTeam,
+          userBookmaker: userBookmakerName,
+          userOdd,
+        }}
+      />
+
+      <PreparationScreen
+        isOpen={isPreparationOpen}
+        onClose={handleCloseDialogs}
+        onReady={handleReady}
+        opportunity={{
+          teamA,
+          teamB,
+          sport,
+          userTeam,
+          userBookmaker: userBookmakerName,
+          userOdd,
+          stakeAmount,
+          profitMargin,
+        }}
+      />
+
+      <ExecutionDialog
+        isOpen={isExecutionOpen}
+        onClose={handleCloseDialogs}
+        onComplete={handleExecutionComplete}
+        opportunity={{
+          userTeam,
+          userBookmaker: userBookmakerName,
+          userOdd,
+          stakeAmount,
+          depositAmount,
+        }}
+      />
     </Card>
   );
 };
