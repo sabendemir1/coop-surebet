@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { ArrowRightLeft, TrendingUp, Wallet, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRightLeft, TrendingUp, Wallet, DollarSign, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { useState } from "react";
 
 const CryptoDashboard = () => {
@@ -15,6 +15,13 @@ const CryptoDashboard = () => {
   const priceDifference = coinbasePrice - binancePrice;
   const profitPerUser = priceDifference / 3; // 1/3 split
   const totalPool = 75000; // Random between 10k-100k
+
+  // Calculate percentages
+  const opportunity1Percentage = ((coinbasePrice - binancePrice) / binancePrice * 100);
+  const opportunity1ProfitPercentage = opportunity1Percentage / 3;
+  
+  const opportunity2Percentage = ((binancePrice - (binancePrice - 500)) / (binancePrice - 500) * 100);
+  const opportunity2ProfitPercentage = opportunity2Percentage / 3;
 
   const toggleOpportunity = (opportunityId: number) => {
     setExpandedOpportunity(expandedOpportunity === opportunityId ? null : opportunityId);
@@ -41,11 +48,19 @@ const CryptoDashboard = () => {
           {/* Opportunity 1: Binance cheaper - You can be BTC Provider */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-6 w-6 text-green-500" />
-                Opportunity #1 - Bitcoin (BTC)
-                <Badge variant="secondary" className="ml-2">You can be BTC Provider</Badge>
-              </CardTitle>
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6 text-green-500" />
+                  <div>
+                    <CardTitle>Opportunity #1 - Bitcoin (BTC)</CardTitle>
+                    <Badge variant="secondary" className="mt-1">You can be BTC Provider</Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>2h 15m</span>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -65,8 +80,12 @@ const CryptoDashboard = () => {
               </div>
               
               <div className="text-center bg-gradient-to-r from-green-500/20 to-blue-500/20 p-4 rounded-lg mb-4">
-                <p className="text-lg font-semibold">Price Difference: <span className="text-green-400">${priceDifference.toLocaleString()}</span></p>
-                <p className="text-sm text-muted-foreground">Your potential profit: ${profitPerUser.toFixed(2)} (after 1/3 split)</p>
+                <p className="text-lg font-semibold">
+                  Price Difference: <span className="text-green-400">+{opportunity1Percentage.toFixed(2)}%</span>
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  You get 1/3 of it: <span className="text-green-400">+{opportunity1ProfitPercentage.toFixed(2)}%</span> of your investment
+                </p>
               </div>
 
               <div className="flex justify-center">
@@ -125,11 +144,19 @@ const CryptoDashboard = () => {
           {/* Opportunity 2: Coinbase cheaper - You can be Money Provider */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-6 w-6 text-blue-500" />
-                Opportunity #2 - Bitcoin (BTC)
-                <Badge variant="secondary" className="ml-2">You can be Money Provider</Badge>
-              </CardTitle>
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6 text-blue-500" />
+                  <div>
+                    <CardTitle>Opportunity #2 - Bitcoin (BTC)</CardTitle>
+                    <Badge variant="secondary" className="mt-1">You can be Money Provider</Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>45m</span>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -149,8 +176,12 @@ const CryptoDashboard = () => {
               </div>
               
               <div className="text-center bg-gradient-to-r from-blue-500/20 to-green-500/20 p-4 rounded-lg mb-4">
-                <p className="text-lg font-semibold">Price Difference: <span className="text-green-400">$500</span></p>
-                <p className="text-sm text-muted-foreground">Your potential profit: $166.67 (after 1/3 split)</p>
+                <p className="text-lg font-semibold">
+                  Price Difference: <span className="text-green-400">+{opportunity2Percentage.toFixed(2)}%</span>
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  You get 1/3 of it: <span className="text-green-400">+{opportunity2ProfitPercentage.toFixed(2)}%</span> of your investment
+                </p>
               </div>
 
               <div className="flex justify-center">
