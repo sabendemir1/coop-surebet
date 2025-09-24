@@ -76,20 +76,22 @@ const Dashboard = () => {
 
   useEffect(() => {
     const name = localStorage.getItem("userName");
-    const bookmaker = localStorage.getItem("userBookmaker");
+    const account = localStorage.getItem("userAccount");
+    const area = localStorage.getItem("userArea");
     
-    if (!name || !bookmaker) {
+    if (!name || !account || area !== "sports") {
       navigate("/");
       return;
     }
     
     setUserName(name);
-    setUserBookmaker(bookmaker);
+    setUserBookmaker(account);
   }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("userName");
-    localStorage.removeItem("userBookmaker");
+    localStorage.removeItem("userAccount");
+    localStorage.removeItem("userArea");
     navigate("/");
   };
 
