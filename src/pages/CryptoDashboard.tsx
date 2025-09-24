@@ -31,6 +31,16 @@ const CryptoDashboard = () => {
   const btcPool = 85000;
   const ethPool = 42000;
 
+  // Debug log to ensure variables are defined
+  console.log('CryptoDashboard variables:', {
+    btcBinancePrice,
+    btcCoinbasePrice,
+    btcProfitPerUser,
+    ethBinancePrice,
+    ethCoinbasePrice,
+    ethProfitPerUser
+  });
+
   const toggleOpportunity = (opportunityId: number) => {
     setExpandedOpportunity(expandedOpportunity === opportunityId ? null : opportunityId);
   };
