@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { ArrowRightLeft, TrendingUp, Wallet, DollarSign, ChevronDown, ChevronUp, Clock, Lock } from "lucide-react";
 import { useState } from "react";
-import MatchmakingDialog from "@/components/MatchmakingDialog";
+import CryptoMatchmakingDialog from "@/components/CryptoMatchmakingDialog";
 import CryptoProviderDialog from "@/components/CryptoProviderDialog";
 import MoneyProviderDialog from "@/components/MoneyProviderDialog";
 
@@ -63,52 +63,50 @@ const CryptoDashboard = () => {
     if (opportunityId === 1) {
       // BTC opportunity
       setCurrentOpportunity({
-        teamA: 'Binance',
-        teamB: 'Coinbase', 
-        sport: 'Crypto',
-        oddA: btcBinancePrice,
-        oddB: btcCoinbasePrice,
+        exchangeA: 'Binance',
+        exchangeB: 'Coinbase', 
+        cryptoType: 'BTC',
+        priceA: btcBinancePrice,
+        priceB: btcCoinbasePrice,
         profitMargin: btcPercentage.toFixed(2),
-        userTeam: role === 'crypto' ? 'BTC Provider' : 'Money Provider',
-        userBookmaker: role === 'crypto' ? 'Binance' : 'Platform',
-        userOdd: role === 'crypto' ? btcBinancePrice : btcCoinbasePrice,
-        stakeAmount: role === 'crypto' ? btcAmount : (btcPool - btcTotalProfit),
-        depositAmount: role === 'crypto' ? btcPool : (btcPool - btcTotalProfit),
+        userRole: role === 'crypto' ? 'BTC Provider' : 'Money Provider',
+        userExchange: role === 'crypto' ? 'Binance' : 'Platform',
+        cryptoAmount: btcAmount,
+        investmentAmount: role === 'crypto' ? btcPool : (btcPool - btcTotalProfit),
         profitAmount: btcTotalProfit,
         userProfitMargin: btcProfitPercentage.toFixed(2),
         // Additional data for role-specific dialogs
-        cryptoType: 'BTC',
         amount: btcAmount,
-        investmentAmount: btcPool,
         revenueAmount: btcPool + btcTotalProfit,
         platformWallet: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
         sellValue: btcPool,
-        edgeProfit: btcTotalProfit
+        edgeProfit: btcTotalProfit,
+        depositAmount: btcPool - btcTotalProfit,
+        receiveAmount: btcAmount
       });
     } else {
       // ETH opportunity
       setCurrentOpportunity({
-        teamA: 'Coinbase',
-        teamB: 'Binance',
-        sport: 'Crypto', 
-        oddA: ethCoinbasePrice,
-        oddB: ethBinancePrice,
+        exchangeA: 'Coinbase',
+        exchangeB: 'Binance',
+        cryptoType: 'ETH', 
+        priceA: ethCoinbasePrice,
+        priceB: ethBinancePrice,
         profitMargin: ethPercentage.toFixed(2),
-        userTeam: role === 'crypto' ? 'ETH Provider' : 'Money Provider',
-        userBookmaker: role === 'crypto' ? 'Coinbase' : 'Platform',
-        userOdd: role === 'crypto' ? ethCoinbasePrice : ethBinancePrice,
-        stakeAmount: role === 'crypto' ? ethAmount : (ethPool - ethTotalProfit),
-        depositAmount: role === 'crypto' ? ethPool : (ethPool - ethTotalProfit), 
+        userRole: role === 'crypto' ? 'ETH Provider' : 'Money Provider',
+        userExchange: role === 'crypto' ? 'Coinbase' : 'Platform',
+        cryptoAmount: ethAmount,
+        investmentAmount: role === 'crypto' ? ethPool : (ethPool - ethTotalProfit),
         profitAmount: ethTotalProfit,
         userProfitMargin: ethProfitPercentage.toFixed(2),
         // Additional data for role-specific dialogs
-        cryptoType: 'ETH', 
         amount: ethAmount,
-        investmentAmount: ethPool,
         revenueAmount: ethPool + ethTotalProfit,
         platformWallet: '0x742d35Cc6635C0532925a3b8D6A85C11A5B9Cf8E',
         sellValue: ethPool,
-        edgeProfit: ethTotalProfit
+        edgeProfit: ethTotalProfit,
+        depositAmount: ethPool - ethTotalProfit,
+        receiveAmount: ethAmount
       });
     }
     setMatchmakingOpen(true);
@@ -374,7 +372,7 @@ const CryptoDashboard = () => {
         {/* Dialogs */}
         {currentOpportunity && (
           <>
-            <MatchmakingDialog
+            <CryptoMatchmakingDialog
               isOpen={matchmakingOpen}
               onClose={() => setMatchmakingOpen(false)}
               onMatchFound={handleMatchFound}
