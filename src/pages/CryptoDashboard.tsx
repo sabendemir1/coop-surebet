@@ -30,37 +30,74 @@ const CryptoDashboard = () => {
           </Button>
         </div>
 
-        {/* Current Arbitrage Opportunity */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-green-500" />
-              Live Arbitrage Opportunity - Bitcoin (BTC)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Binance (Cheap)</h3>
-                <p className="text-3xl font-bold text-green-400">${binancePrice.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">per BTC</p>
+        {/* Live Arbitrage Opportunities */}
+        <div className="space-y-6 mb-8">
+          {/* Opportunity 1: Binance cheaper - You can be BTC Provider */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-green-500" />
+                Opportunity #1 - Bitcoin (BTC)
+                <Badge variant="secondary" className="ml-2">You can be BTC Provider</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">Binance (Cheap)</h3>
+                  <p className="text-3xl font-bold text-green-400">${binancePrice.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">per BTC</p>
+                </div>
+                <div className="text-center flex items-center justify-center">
+                  <ArrowRightLeft className="h-8 w-8 text-blue-400" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">Coinbase (Expensive)</h3>
+                  <p className="text-3xl font-bold text-red-400">${coinbasePrice.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">per BTC</p>
+                </div>
               </div>
-              <div className="text-center flex items-center justify-center">
-                <ArrowRightLeft className="h-8 w-8 text-blue-400" />
+              
+              <div className="text-center bg-gradient-to-r from-green-500/20 to-blue-500/20 p-4 rounded-lg">
+                <p className="text-lg font-semibold">Price Difference: <span className="text-green-400">${priceDifference.toLocaleString()}</span></p>
+                <p className="text-sm text-muted-foreground">Your potential profit: ${profitPerUser.toFixed(2)} (after 1/3 split)</p>
               </div>
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">Coinbase (Expensive)</h3>
-                <p className="text-3xl font-bold text-red-400">${coinbasePrice.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">per BTC</p>
+            </CardContent>
+          </Card>
+
+          {/* Opportunity 2: Coinbase cheaper - You can be Money Provider */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-6 w-6 text-blue-500" />
+                Opportunity #2 - Bitcoin (BTC)
+                <Badge variant="secondary" className="ml-2">You can be Money Provider</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">Coinbase (Cheap)</h3>
+                  <p className="text-3xl font-bold text-green-400">${(binancePrice - 500).toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">per BTC</p>
+                </div>
+                <div className="text-center flex items-center justify-center">
+                  <ArrowRightLeft className="h-8 w-8 text-blue-400" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">Binance (Expensive)</h3>
+                  <p className="text-3xl font-bold text-red-400">${binancePrice.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">per BTC</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="text-center bg-gradient-to-r from-green-500/20 to-blue-500/20 p-4 rounded-lg">
-              <p className="text-lg font-semibold">Price Difference: <span className="text-green-400">${priceDifference.toLocaleString()}</span></p>
-              <p className="text-sm text-muted-foreground">Profit per user: ${profitPerUser.toFixed(2)} (after 1/3 split)</p>
-            </div>
-          </CardContent>
-        </Card>
+              
+              <div className="text-center bg-gradient-to-r from-blue-500/20 to-green-500/20 p-4 rounded-lg">
+                <p className="text-lg font-semibold">Price Difference: <span className="text-green-400">$500</span></p>
+                <p className="text-sm text-muted-foreground">Your potential profit: $166.67 (after 1/3 split)</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Pool Status */}
         <Card className="mb-8">
@@ -79,13 +116,13 @@ const CryptoDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Trading Scenarios */}
+        {/* Trading Scenarios for Each Opportunity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Scenario A: Buy from Exchange, Sell to Platform */}
+          {/* Opportunity 1 Scenario: Buy from Binance, Sell to Platform */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-green-400">Scenario A: Provide Cheap BTC</CardTitle>
-              <p className="text-sm text-muted-foreground">Buy from Binance → Sell to Platform</p>
+              <CardTitle className="text-green-400">Opportunity #1: Your Role - BTC Provider</CardTitle>
+              <p className="text-sm text-muted-foreground">Buy from Binance (${binancePrice.toLocaleString()}) → Sell to Platform</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-slate-800/50 p-4 rounded-lg">
@@ -93,7 +130,7 @@ const CryptoDashboard = () => {
                 <ol className="list-decimal list-inside space-y-1 text-sm">
                   <li>Buy 1 BTC on Binance for ${binancePrice.toLocaleString()}</li>
                   <li>Transfer BTC to our platform</li>
-                  <li>Sell BTC to platform (matched with User B)</li>
+                  <li>Platform matches you with money provider</li>
                   <li>Platform pays you ${(binancePrice + profitPerUser).toLocaleString()}</li>
                 </ol>
               </div>
@@ -109,40 +146,40 @@ const CryptoDashboard = () => {
 
               <Button className="w-full bg-green-600 hover:bg-green-700">
                 <DollarSign className="mr-2 h-4 w-4" />
-                Start as BTC Provider
+                Join Opportunity #1
               </Button>
             </CardContent>
           </Card>
 
-          {/* Scenario B: Deposit to Platform, Get BTC to Sell */}
+          {/* Opportunity 2 Scenario: Deposit to Platform, Get BTC to Sell */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-blue-400">Scenario B: Provide Expensive Money</CardTitle>
-              <p className="text-sm text-muted-foreground">Deposit to Platform → Get BTC → Sell on Coinbase</p>
+              <CardTitle className="text-blue-400">Opportunity #2: Your Role - Money Provider</CardTitle>
+              <p className="text-sm text-muted-foreground">Deposit to Platform → Get BTC → Sell on Binance (${binancePrice.toLocaleString()})</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-slate-800/50 p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">What You Do:</h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Deposit ${(coinbasePrice - profitPerUser).toLocaleString()} to platform</li>
-                  <li>Platform matches you with BTC provider</li>
+                  <li>Deposit ${(binancePrice - 166.67).toLocaleString()} to platform</li>
+                  <li>Platform matches you with BTC provider (buying from Coinbase)</li>
                   <li>Receive 1 BTC from platform</li>
-                  <li>Sell BTC on Coinbase for ${coinbasePrice.toLocaleString()}</li>
+                  <li>Sell BTC on Binance for ${binancePrice.toLocaleString()}</li>
                 </ol>
               </div>
               
               <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-500/20">
                 <h4 className="font-semibold text-blue-400 mb-2">Your Deposit & Profit:</h4>
-                <p className="text-sm">💳 Deposit: ${(coinbasePrice - profitPerUser).toLocaleString()}</p>
-                <p className="text-sm">₿ Receive: 1 BTC (worth ${coinbasePrice.toLocaleString()})</p>
+                <p className="text-sm">💳 Deposit: ${(binancePrice - 166.67).toLocaleString()}</p>
+                <p className="text-sm">₿ Receive: 1 BTC (sell for ${binancePrice.toLocaleString()})</p>
                 <p className="text-lg font-bold text-blue-400">
-                  Net Profit: ${profitPerUser.toFixed(2)}
+                  Net Profit: $166.67
                 </p>
               </div>
 
               <Button className="w-full bg-blue-600 hover:bg-blue-700">
                 <Wallet className="mr-2 h-4 w-4" />
-                Start as Money Provider
+                Join Opportunity #2
               </Button>
             </CardContent>
           </Card>
