@@ -6,33 +6,90 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 
-const bookmakers = [
-  { id: "bet365", name: "Bet365 (UK)", country: "🇬🇧" },
-  { id: "pinnacle", name: "Pinnacle (Curacao)", country: "🇨🇼" },
-  { id: "betfair", name: "Betfair (UK)", country: "🇬🇧" },
-  { id: "unibet", name: "Unibet (Malta)", country: "🇲🇹" },
-  { id: "betway", name: "Betway (Malta)", country: "🇲🇹" },
-  { id: "williamhill", name: "William Hill (UK)", country: "🇬🇧" },
-  { id: "bwin", name: "BWin (Austria)", country: "🇦🇹" },
-  { id: "betsson", name: "Betsson (Sweden)", country: "🇸🇪" },
-  { id: "draftkings", name: "DraftKings (US)", country: "🇺🇸" },
-  { id: "fanduel", name: "FanDuel (US)", country: "🇺🇸" },
-  { id: "betclic", name: "Betclic (France)", country: "🇫🇷" },
-  { id: "stake", name: "Stake (Curacao)", country: "🇨🇼" }
+const tradingAreas = [
+  { id: "sports", name: "Sports Betting", icon: "🏈" },
+  { id: "stocks", name: "Stocks", icon: "📈" },
+  { id: "crypto", name: "Crypto", icon: "₿" },
+  { id: "forex", name: "Forex", icon: "💱" }
 ];
+
+const accountsByArea = {
+  sports: [
+    { id: "bet365", name: "Bet365 (UK)", country: "🇬🇧" },
+    { id: "pinnacle", name: "Pinnacle (Curacao)", country: "🇨🇼" },
+    { id: "betfair", name: "Betfair (UK)", country: "🇬🇧" },
+    { id: "unibet", name: "Unibet (Malta)", country: "🇲🇹" },
+    { id: "betway", name: "Betway (Malta)", country: "🇲🇹" },
+    { id: "williamhill", name: "William Hill (UK)", country: "🇬🇧" },
+    { id: "bwin", name: "BWin (Austria)", country: "🇦🇹" },
+    { id: "betsson", name: "Betsson (Sweden)", country: "🇸🇪" },
+    { id: "draftkings", name: "DraftKings (US)", country: "🇺🇸" },
+    { id: "fanduel", name: "FanDuel (US)", country: "🇺🇸" },
+    { id: "betclic", name: "Betclic (France)", country: "🇫🇷" },
+    { id: "stake", name: "Stake (Curacao)", country: "🇨🇼" }
+  ],
+  stocks: [
+    { id: "interactive_brokers", name: "Interactive Brokers", country: "🇺🇸" },
+    { id: "charles_schwab", name: "Charles Schwab", country: "🇺🇸" },
+    { id: "fidelity", name: "Fidelity", country: "🇺🇸" },
+    { id: "etrade", name: "E*TRADE", country: "🇺🇸" },
+    { id: "td_ameritrade", name: "TD Ameritrade", country: "🇺🇸" },
+    { id: "robinhood", name: "Robinhood", country: "🇺🇸" },
+    { id: "trading212", name: "Trading 212", country: "🇬🇧" },
+    { id: "degiro", name: "DEGIRO", country: "🇳🇱" },
+    { id: "ig", name: "IG", country: "🇬🇧" },
+    { id: "plus500", name: "Plus500", country: "🇮🇱" }
+  ],
+  crypto: [
+    { id: "binance", name: "Binance", country: "🌍" },
+    { id: "coinbase", name: "Coinbase Pro", country: "🇺🇸" },
+    { id: "kraken", name: "Kraken", country: "🇺🇸" },
+    { id: "bitfinex", name: "Bitfinex", country: "🇻🇬" },
+    { id: "kucoin", name: "KuCoin", country: "🇸🇨" },
+    { id: "okx", name: "OKX", country: "🇸🇨" },
+    { id: "bybit", name: "Bybit", country: "🇸🇬" },
+    { id: "gemini", name: "Gemini", country: "🇺🇸" },
+    { id: "huobi", name: "Huobi", country: "🇸🇬" },
+    { id: "gate_io", name: "Gate.io", country: "🇰🇾" }
+  ],
+  forex: [
+    { id: "oanda", name: "OANDA", country: "🇺🇸" },
+    { id: "forex_com", name: "Forex.com", country: "🇺🇸" },
+    { id: "ig_forex", name: "IG Markets", country: "🇬🇧" },
+    { id: "pepperstone", name: "Pepperstone", country: "🇦🇺" },
+    { id: "ic_markets", name: "IC Markets", country: "🇦🇺" },
+    { id: "fxpro", name: "FxPro", country: "🇬🇧" },
+    { id: "xm", name: "XM", country: "🇨🇾" },
+    { id: "avatrade", name: "AvaTrade", country: "🇮🇪" },
+    { id: "etoro", name: "eToro", country: "🇮🇱" },
+    { id: "plus500_forex", name: "Plus500", country: "🇮🇱" }
+  ]
+};
 
 const Login = () => {
   const [name, setName] = useState("");
-  const [selectedBookmaker, setSelectedBookmaker] = useState("");
+  const [selectedArea, setSelectedArea] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    if (name && selectedBookmaker) {
+    if (name && selectedArea && selectedAccount) {
       localStorage.setItem("userName", name);
-      localStorage.setItem("userBookmaker", selectedBookmaker);
-      navigate("/dashboard");
+      localStorage.setItem("userArea", selectedArea);
+      localStorage.setItem("userAccount", selectedAccount);
+      
+      const routes = {
+        sports: "/dashboard",
+        stocks: "/stocks-dashboard", 
+        crypto: "/crypto-dashboard",
+        forex: "/forex-dashboard"
+      };
+      
+      navigate(routes[selectedArea as keyof typeof routes]);
     }
   };
+
+  const currentAccounts = selectedArea ? accountsByArea[selectedArea as keyof typeof accountsByArea] : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-6 animate-fade-in">
@@ -71,16 +128,19 @@ const Login = () => {
           </div>
 
           <div className="space-y-2 animate-fade-in" style={{ animationDelay: '1s' }}>
-            <Label htmlFor="bookmaker">Your Bookmaker Account</Label>
-            <Select value={selectedBookmaker} onValueChange={setSelectedBookmaker}>
+            <Label htmlFor="area">Trading Area</Label>
+            <Select value={selectedArea} onValueChange={(value) => {
+              setSelectedArea(value);
+              setSelectedAccount(""); // Reset account when area changes
+            }}>
               <SelectTrigger className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40">
-                <SelectValue placeholder="Select your bookmaker" />
+                <SelectValue placeholder="Select your trading area" />
               </SelectTrigger>
               <SelectContent>
-                {bookmakers.map((bookmaker) => (
-                  <SelectItem key={bookmaker.id} value={bookmaker.id}>
+                {tradingAreas.map((area) => (
+                  <SelectItem key={area.id} value={area.id}>
                     <span className="flex items-center gap-2">
-                      {bookmaker.country} {bookmaker.name}
+                      {area.icon} {area.name}
                     </span>
                   </SelectItem>
                 ))}
@@ -88,10 +148,30 @@ const Login = () => {
             </Select>
           </div>
 
-          <div className="animate-fade-in" style={{ animationDelay: '1.2s' }}>
+          {selectedArea && (
+            <div className="space-y-2 animate-fade-in" style={{ animationDelay: '1.2s' }}>
+              <Label htmlFor="account">Your {tradingAreas.find(a => a.id === selectedArea)?.name} Account</Label>
+              <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+                <SelectTrigger className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40">
+                  <SelectValue placeholder={`Select your ${selectedArea === 'sports' ? 'bookmaker' : selectedArea === 'stocks' ? 'broker' : selectedArea === 'crypto' ? 'exchange' : 'broker'}`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentAccounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <span className="flex items-center gap-2">
+                        {account.country} {account.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="animate-fade-in" style={{ animationDelay: '1.4s' }}>
             <Button 
               onClick={handleLogin} 
-              disabled={!name || !selectedBookmaker}
+              disabled={!name || !selectedArea || !selectedAccount}
               className="w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:hover:scale-100"
               variant="hero"
               size="lg"
@@ -101,7 +181,7 @@ const Login = () => {
           </div>
         </div>
 
-        <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: '1.4s' }}>
+        <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: '1.6s' }}>
           <Button 
             variant="ghost" 
             onClick={() => navigate("/info")}
