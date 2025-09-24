@@ -9,19 +9,27 @@ const CryptoDashboard = () => {
   const navigate = useNavigate();
   const [expandedOpportunity, setExpandedOpportunity] = useState<number | null>(null);
 
-  // Mock data for the arbitrage opportunity
-  const binancePrice = 100000;
-  const coinbasePrice = 101000;
-  const priceDifference = coinbasePrice - binancePrice;
-  const profitPerUser = priceDifference / 3; // 1/3 split
-  const totalPool = 75000; // Random between 10k-100k
+  // Mock data for arbitrage opportunities
+  const btcBinancePrice = 100000;
+  const btcCoinbasePrice = 101000;
+  const btcPriceDifference = btcCoinbasePrice - btcBinancePrice;
+  const btcProfitPerUser = btcPriceDifference / 3;
+  
+  const ethCoinbasePrice = 3500;
+  const ethBinancePrice = 3520;
+  const ethPriceDifference = ethBinancePrice - ethCoinbasePrice;
+  const ethProfitPerUser = ethPriceDifference / 3;
 
   // Calculate percentages
-  const opportunity1Percentage = ((coinbasePrice - binancePrice) / binancePrice * 100);
-  const opportunity1ProfitPercentage = opportunity1Percentage / 3;
+  const btcPercentage = ((btcCoinbasePrice - btcBinancePrice) / btcBinancePrice * 100);
+  const btcProfitPercentage = btcPercentage / 3;
   
-  const opportunity2Percentage = ((binancePrice - (binancePrice - 500)) / (binancePrice - 500) * 100);
-  const opportunity2ProfitPercentage = opportunity2Percentage / 3;
+  const ethPercentage = ((ethBinancePrice - ethCoinbasePrice) / ethCoinbasePrice * 100);
+  const ethProfitPercentage = ethPercentage / 3;
+
+  // Pool data
+  const btcPool = 85000;
+  const ethPool = 42000;
 
   const toggleOpportunity = (opportunityId: number) => {
     setExpandedOpportunity(expandedOpportunity === opportunityId ? null : opportunityId);
@@ -66,7 +74,7 @@ const CryptoDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="text-center">
                   <h3 className="text-lg font-semibold mb-2">Binance (Cheap)</h3>
-                  <p className="text-3xl font-bold text-green-400">${binancePrice.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-green-400">${btcBinancePrice.toLocaleString()}</p>
                   <p className="text-sm text-muted-foreground">per BTC</p>
                 </div>
                 <div className="text-center flex items-center justify-center">
@@ -74,17 +82,17 @@ const CryptoDashboard = () => {
                 </div>
                 <div className="text-center">
                   <h3 className="text-lg font-semibold mb-2">Coinbase (Expensive)</h3>
-                  <p className="text-3xl font-bold text-red-400">${coinbasePrice.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-red-400">${btcCoinbasePrice.toLocaleString()}</p>
                   <p className="text-sm text-muted-foreground">per BTC</p>
                 </div>
               </div>
               
               <div className="text-center bg-gradient-to-r from-green-500/20 to-blue-500/20 p-4 rounded-lg mb-4">
                 <p className="text-lg font-semibold">
-                  Price Difference: <span className="text-green-400">+{opportunity1Percentage.toFixed(2)}%</span>
+                  Price Difference: <span className="text-green-400">+{btcPercentage.toFixed(2)}%</span>
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  You get 1/3 of it: <span className="text-green-400">+{opportunity1ProfitPercentage.toFixed(2)}%</span> of your investment
+                  You get 1/3 of it: <span className="text-green-400">+{btcProfitPercentage.toFixed(2)}%</span> of your investment
                 </p>
               </div>
 
@@ -110,24 +118,24 @@ const CryptoDashboard = () => {
                 <div className="mt-6 space-y-4 border-t pt-6">
                   <div className="bg-green-900/10 p-6 rounded-lg">
                     <h4 className="text-lg font-semibold text-green-400 mb-4">Your Role: BTC Provider</h4>
-                    <p className="text-sm text-muted-foreground mb-4">Buy from Binance (${binancePrice.toLocaleString()}) → Sell to Platform</p>
+                    <p className="text-sm text-muted-foreground mb-4">Buy from Binance (${btcBinancePrice.toLocaleString()}) → Sell to Platform</p>
                     
                     <div className="bg-slate-800/50 p-4 rounded-lg mb-4">
                       <h5 className="font-semibold mb-2">What You Do:</h5>
                       <ol className="list-decimal list-inside space-y-1 text-sm">
-                        <li>Buy 1 BTC on Binance for ${binancePrice.toLocaleString()}</li>
+                        <li>Buy 1 BTC on Binance for ${btcBinancePrice.toLocaleString()}</li>
                         <li>Transfer BTC to our platform</li>
                         <li>Platform matches you with money provider</li>
-                        <li>Platform pays you ${(binancePrice + profitPerUser).toLocaleString()}</li>
+                        <li>Platform pays you ${(btcBinancePrice + btcProfitPerUser).toLocaleString()}</li>
                       </ol>
                     </div>
                     
                     <div className="bg-green-900/20 p-4 rounded-lg border border-green-500/20 mb-4">
                       <h5 className="font-semibold text-green-400 mb-2">Your Investment & Profit:</h5>
-                      <p className="text-sm">💰 Investment: ${binancePrice.toLocaleString()}</p>
-                      <p className="text-sm">📈 Revenue: ${(binancePrice + profitPerUser).toLocaleString()}</p>
+                      <p className="text-sm">💰 Investment: ${btcBinancePrice.toLocaleString()}</p>
+                      <p className="text-sm">📈 Revenue: ${(btcBinancePrice + btcProfitPerUser).toLocaleString()}</p>
                       <p className="text-lg font-bold text-green-400">
-                        Net Profit: ${profitPerUser.toFixed(2)}
+                        Net Profit: ${btcProfitPerUser.toFixed(2)}
                       </p>
                     </div>
 
@@ -141,14 +149,14 @@ const CryptoDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Opportunity 2: Coinbase cheaper - You can be Money Provider */}
+          {/* Opportunity 2: Ethereum - You can be Money Provider */}
           <Card>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-6 w-6 text-blue-500" />
                   <div>
-                    <CardTitle>Opportunity #2 - Bitcoin (BTC)</CardTitle>
+                    <CardTitle>Opportunity #2 - Ethereum (ETH)</CardTitle>
                     <Badge variant="secondary" className="mt-1">You can be Money Provider</Badge>
                   </div>
                 </div>
@@ -162,25 +170,25 @@ const CryptoDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="text-center">
                   <h3 className="text-lg font-semibold mb-2">Coinbase (Cheap)</h3>
-                  <p className="text-3xl font-bold text-green-400">${(binancePrice - 500).toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">per BTC</p>
+                  <p className="text-3xl font-bold text-green-400">${ethCoinbasePrice.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">per ETH</p>
                 </div>
                 <div className="text-center flex items-center justify-center">
                   <ArrowRightLeft className="h-8 w-8 text-blue-400" />
                 </div>
                 <div className="text-center">
                   <h3 className="text-lg font-semibold mb-2">Binance (Expensive)</h3>
-                  <p className="text-3xl font-bold text-red-400">${binancePrice.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">per BTC</p>
+                  <p className="text-3xl font-bold text-red-400">${ethBinancePrice.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">per ETH</p>
                 </div>
               </div>
               
               <div className="text-center bg-gradient-to-r from-blue-500/20 to-green-500/20 p-4 rounded-lg mb-4">
                 <p className="text-lg font-semibold">
-                  Price Difference: <span className="text-green-400">+{opportunity2Percentage.toFixed(2)}%</span>
+                  Price Difference: <span className="text-green-400">+{ethPercentage.toFixed(2)}%</span>
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  You get 1/3 of it: <span className="text-green-400">+{opportunity2ProfitPercentage.toFixed(2)}%</span> of your investment
+                  You get 1/3 of it: <span className="text-green-400">+{ethProfitPercentage.toFixed(2)}%</span> of your investment
                 </p>
               </div>
 
@@ -206,24 +214,24 @@ const CryptoDashboard = () => {
                 <div className="mt-6 space-y-4 border-t pt-6">
                   <div className="bg-blue-900/10 p-6 rounded-lg">
                     <h4 className="text-lg font-semibold text-blue-400 mb-4">Your Role: Money Provider</h4>
-                    <p className="text-sm text-muted-foreground mb-4">Deposit to Platform → Get BTC → Sell on Binance (${binancePrice.toLocaleString()})</p>
+                    <p className="text-sm text-muted-foreground mb-4">Deposit to Platform → Get ETH → Sell on Binance (${ethBinancePrice.toLocaleString()})</p>
                     
                     <div className="bg-slate-800/50 p-4 rounded-lg mb-4">
                       <h5 className="font-semibold mb-2">What You Do:</h5>
                       <ol className="list-decimal list-inside space-y-1 text-sm">
-                        <li>Deposit ${(binancePrice - 166.67).toLocaleString()} to platform</li>
-                        <li>Platform matches you with BTC provider (buying from Coinbase)</li>
-                        <li>Receive 1 BTC from platform</li>
-                        <li>Sell BTC on Binance for ${binancePrice.toLocaleString()}</li>
+                        <li>Deposit ${(ethBinancePrice - ethProfitPerUser).toLocaleString()} to platform</li>
+                        <li>Platform matches you with ETH provider (buying from Coinbase)</li>
+                        <li>Receive 1 ETH from platform</li>
+                        <li>Sell ETH on Binance for ${ethBinancePrice.toLocaleString()}</li>
                       </ol>
                     </div>
                     
                     <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-500/20 mb-4">
                       <h5 className="font-semibold text-blue-400 mb-2">Your Deposit & Profit:</h5>
-                      <p className="text-sm">💳 Deposit: ${(binancePrice - 166.67).toLocaleString()}</p>
-                      <p className="text-sm">₿ Receive: 1 BTC (sell for ${binancePrice.toLocaleString()})</p>
+                      <p className="text-sm">💳 Deposit: ${(ethBinancePrice - ethProfitPerUser).toLocaleString()}</p>
+                      <p className="text-sm">Ξ Receive: 1 ETH (sell for ${ethBinancePrice.toLocaleString()})</p>
                       <p className="text-lg font-bold text-blue-400">
-                        Net Profit: $166.67
+                        Net Profit: ${ethProfitPerUser.toFixed(2)}
                       </p>
                     </div>
 
@@ -239,29 +247,47 @@ const CryptoDashboard = () => {
         </div>
 
         {/* Pool Status */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wallet className="h-6 w-6 text-blue-500" />
-              Current Pool Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-400">${totalPool.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">Total liquidity available for matching</p>
-              <Badge variant="secondary" className="mt-2">Active Pool</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-6 w-6 text-orange-500" />
+                Bitcoin Pool
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-orange-400">${btcPool.toLocaleString()}</p>
+                <p className="text-sm text-muted-foreground">BTC liquidity available</p>
+                <Badge variant="secondary" className="mt-2">Active</Badge>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-6 w-6 text-blue-500" />
+                Ethereum Pool
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-400">${ethPool.toLocaleString()}</p>
+                <p className="text-sm text-muted-foreground">ETH liquidity available</p>
+                <Badge variant="secondary" className="mt-2">Active</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Platform Commission Info */}
         <Card className="mt-8">
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
-                Platform Commission: ${profitPerUser.toFixed(2)} per trade • 
-                Total profit split equally: Users A & B each get ${profitPerUser.toFixed(2)}
+                Platform Commission varies per trade • 
+                Total profit split equally among all three parties (platform + both users)
               </p>
             </div>
           </CardContent>
