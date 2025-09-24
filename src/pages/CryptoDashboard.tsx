@@ -2,10 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { ArrowRightLeft, TrendingUp, Wallet, DollarSign } from "lucide-react";
+import { ArrowRightLeft, TrendingUp, Wallet, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 const CryptoDashboard = () => {
   const navigate = useNavigate();
+  const [expandedOpportunity, setExpandedOpportunity] = useState<number | null>(null);
 
   // Mock data for the arbitrage opportunity
   const binancePrice = 100000;
@@ -13,6 +15,10 @@ const CryptoDashboard = () => {
   const priceDifference = coinbasePrice - binancePrice;
   const profitPerUser = priceDifference / 3; // 1/3 split
   const totalPool = 75000; // Random between 10k-100k
+
+  const toggleOpportunity = (opportunityId: number) => {
+    setExpandedOpportunity(expandedOpportunity === opportunityId ? null : opportunityId);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-6">
@@ -58,10 +64,61 @@ const CryptoDashboard = () => {
                 </div>
               </div>
               
-              <div className="text-center bg-gradient-to-r from-green-500/20 to-blue-500/20 p-4 rounded-lg">
+              <div className="text-center bg-gradient-to-r from-green-500/20 to-blue-500/20 p-4 rounded-lg mb-4">
                 <p className="text-lg font-semibold">Price Difference: <span className="text-green-400">${priceDifference.toLocaleString()}</span></p>
                 <p className="text-sm text-muted-foreground">Your potential profit: ${profitPerUser.toFixed(2)} (after 1/3 split)</p>
               </div>
+
+              <div className="flex justify-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => toggleOpportunity(1)}
+                  className="flex items-center gap-2"
+                >
+                  {expandedOpportunity === 1 ? (
+                    <>
+                      Hide Details <ChevronUp className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      See More <ChevronDown className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {expandedOpportunity === 1 && (
+                <div className="mt-6 space-y-4 border-t pt-6">
+                  <div className="bg-green-900/10 p-6 rounded-lg">
+                    <h4 className="text-lg font-semibold text-green-400 mb-4">Your Role: BTC Provider</h4>
+                    <p className="text-sm text-muted-foreground mb-4">Buy from Binance (${binancePrice.toLocaleString()}) → Sell to Platform</p>
+                    
+                    <div className="bg-slate-800/50 p-4 rounded-lg mb-4">
+                      <h5 className="font-semibold mb-2">What You Do:</h5>
+                      <ol className="list-decimal list-inside space-y-1 text-sm">
+                        <li>Buy 1 BTC on Binance for ${binancePrice.toLocaleString()}</li>
+                        <li>Transfer BTC to our platform</li>
+                        <li>Platform matches you with money provider</li>
+                        <li>Platform pays you ${(binancePrice + profitPerUser).toLocaleString()}</li>
+                      </ol>
+                    </div>
+                    
+                    <div className="bg-green-900/20 p-4 rounded-lg border border-green-500/20 mb-4">
+                      <h5 className="font-semibold text-green-400 mb-2">Your Investment & Profit:</h5>
+                      <p className="text-sm">💰 Investment: ${binancePrice.toLocaleString()}</p>
+                      <p className="text-sm">📈 Revenue: ${(binancePrice + profitPerUser).toLocaleString()}</p>
+                      <p className="text-lg font-bold text-green-400">
+                        Net Profit: ${profitPerUser.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <Button className="w-full bg-green-600 hover:bg-green-700">
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      Join Opportunity #1
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -91,10 +148,61 @@ const CryptoDashboard = () => {
                 </div>
               </div>
               
-              <div className="text-center bg-gradient-to-r from-blue-500/20 to-green-500/20 p-4 rounded-lg">
+              <div className="text-center bg-gradient-to-r from-blue-500/20 to-green-500/20 p-4 rounded-lg mb-4">
                 <p className="text-lg font-semibold">Price Difference: <span className="text-green-400">$500</span></p>
                 <p className="text-sm text-muted-foreground">Your potential profit: $166.67 (after 1/3 split)</p>
               </div>
+
+              <div className="flex justify-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => toggleOpportunity(2)}
+                  className="flex items-center gap-2"
+                >
+                  {expandedOpportunity === 2 ? (
+                    <>
+                      Hide Details <ChevronUp className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      See More <ChevronDown className="h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {expandedOpportunity === 2 && (
+                <div className="mt-6 space-y-4 border-t pt-6">
+                  <div className="bg-blue-900/10 p-6 rounded-lg">
+                    <h4 className="text-lg font-semibold text-blue-400 mb-4">Your Role: Money Provider</h4>
+                    <p className="text-sm text-muted-foreground mb-4">Deposit to Platform → Get BTC → Sell on Binance (${binancePrice.toLocaleString()})</p>
+                    
+                    <div className="bg-slate-800/50 p-4 rounded-lg mb-4">
+                      <h5 className="font-semibold mb-2">What You Do:</h5>
+                      <ol className="list-decimal list-inside space-y-1 text-sm">
+                        <li>Deposit ${(binancePrice - 166.67).toLocaleString()} to platform</li>
+                        <li>Platform matches you with BTC provider (buying from Coinbase)</li>
+                        <li>Receive 1 BTC from platform</li>
+                        <li>Sell BTC on Binance for ${binancePrice.toLocaleString()}</li>
+                      </ol>
+                    </div>
+                    
+                    <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-500/20 mb-4">
+                      <h5 className="font-semibold text-blue-400 mb-2">Your Deposit & Profit:</h5>
+                      <p className="text-sm">💳 Deposit: ${(binancePrice - 166.67).toLocaleString()}</p>
+                      <p className="text-sm">₿ Receive: 1 BTC (sell for ${binancePrice.toLocaleString()})</p>
+                      <p className="text-lg font-bold text-blue-400">
+                        Net Profit: $166.67
+                      </p>
+                    </div>
+
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      <Wallet className="mr-2 h-4 w-4" />
+                      Join Opportunity #2
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -115,75 +223,6 @@ const CryptoDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Trading Scenarios for Each Opportunity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Opportunity 1 Scenario: Buy from Binance, Sell to Platform */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-green-400">Opportunity #1: Your Role - BTC Provider</CardTitle>
-              <p className="text-sm text-muted-foreground">Buy from Binance (${binancePrice.toLocaleString()}) → Sell to Platform</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-slate-800/50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">What You Do:</h4>
-                <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Buy 1 BTC on Binance for ${binancePrice.toLocaleString()}</li>
-                  <li>Transfer BTC to our platform</li>
-                  <li>Platform matches you with money provider</li>
-                  <li>Platform pays you ${(binancePrice + profitPerUser).toLocaleString()}</li>
-                </ol>
-              </div>
-              
-              <div className="bg-green-900/20 p-4 rounded-lg border border-green-500/20">
-                <h4 className="font-semibold text-green-400 mb-2">Your Investment & Profit:</h4>
-                <p className="text-sm">💰 Investment: ${binancePrice.toLocaleString()}</p>
-                <p className="text-sm">📈 Revenue: ${(binancePrice + profitPerUser).toLocaleString()}</p>
-                <p className="text-lg font-bold text-green-400">
-                  Net Profit: ${profitPerUser.toFixed(2)}
-                </p>
-              </div>
-
-              <Button className="w-full bg-green-600 hover:bg-green-700">
-                <DollarSign className="mr-2 h-4 w-4" />
-                Join Opportunity #1
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Opportunity 2 Scenario: Deposit to Platform, Get BTC to Sell */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-blue-400">Opportunity #2: Your Role - Money Provider</CardTitle>
-              <p className="text-sm text-muted-foreground">Deposit to Platform → Get BTC → Sell on Binance (${binancePrice.toLocaleString()})</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-slate-800/50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">What You Do:</h4>
-                <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Deposit ${(binancePrice - 166.67).toLocaleString()} to platform</li>
-                  <li>Platform matches you with BTC provider (buying from Coinbase)</li>
-                  <li>Receive 1 BTC from platform</li>
-                  <li>Sell BTC on Binance for ${binancePrice.toLocaleString()}</li>
-                </ol>
-              </div>
-              
-              <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-500/20">
-                <h4 className="font-semibold text-blue-400 mb-2">Your Deposit & Profit:</h4>
-                <p className="text-sm">💳 Deposit: ${(binancePrice - 166.67).toLocaleString()}</p>
-                <p className="text-sm">₿ Receive: 1 BTC (sell for ${binancePrice.toLocaleString()})</p>
-                <p className="text-lg font-bold text-blue-400">
-                  Net Profit: $166.67
-                </p>
-              </div>
-
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                <Wallet className="mr-2 h-4 w-4" />
-                Join Opportunity #2
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Platform Commission Info */}
         <Card className="mt-8">
