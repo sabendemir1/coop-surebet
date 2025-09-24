@@ -106,6 +106,17 @@ const CryptoDashboard = () => {
                 </p>
               </div>
 
+              <div className="flex items-center justify-between bg-orange-500/10 p-4 rounded-lg mb-4 border border-orange-500/20">
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-orange-400" />
+                  <span className="font-semibold text-orange-400">Bitcoin Pool</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-orange-400">${btcPool.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Available liquidity</p>
+                </div>
+              </div>
+
               <div className="flex justify-center">
                 <Button 
                   variant="outline" 
@@ -202,6 +213,17 @@ const CryptoDashboard = () => {
                 </p>
               </div>
 
+              <div className="flex items-center justify-between bg-blue-500/10 p-4 rounded-lg mb-4 border border-blue-500/20">
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-blue-400" />
+                  <span className="font-semibold text-blue-400">Ethereum Pool</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-blue-400">${ethPool.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Available liquidity</p>
+                </div>
+              </div>
+
               <div className="flex justify-center">
                 <Button 
                   variant="outline" 
@@ -252,41 +274,6 @@ const CryptoDashboard = () => {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Pool Status */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-6 w-6 text-orange-500" />
-                Bitcoin Pool
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-orange-400">${btcPool.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">BTC liquidity available</p>
-                <Badge variant="secondary" className="mt-2">Active</Badge>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-6 w-6 text-blue-500" />
-                Ethereum Pool
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-400">${ethPool.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">ETH liquidity available</p>
-                <Badge variant="secondary" className="mt-2">Active</Badge>
-              </div>
             </CardContent>
           </Card>
         </div>
