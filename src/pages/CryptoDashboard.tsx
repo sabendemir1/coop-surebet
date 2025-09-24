@@ -2,12 +2,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { ArrowRightLeft, TrendingUp, Wallet, DollarSign, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { ArrowRightLeft, TrendingUp, Wallet, DollarSign, ChevronDown, ChevronUp, Clock, Lock } from "lucide-react";
 import { useState } from "react";
+import MatchmakingDialog from "@/components/MatchmakingDialog";
+import CryptoProviderDialog from "@/components/CryptoProviderDialog";
+import MoneyProviderDialog from "@/components/MoneyProviderDialog";
 
 const CryptoDashboard = () => {
   const navigate = useNavigate();
   const [expandedOpportunity, setExpandedOpportunity] = useState<number | null>(null);
+  const [matchmakingOpen, setMatchmakingOpen] = useState(false);
+  const [cryptoProviderOpen, setCryptoProviderOpen] = useState(false);
+  const [moneyProviderOpen, setMoneyProviderOpen] = useState(false);
+  const [currentOpportunity, setCurrentOpportunity] = useState<any>(null);
 
   // Mock data for arbitrage opportunities
   const btcBinancePrice = 100000;
@@ -50,6 +57,73 @@ const CryptoDashboard = () => {
 
   const toggleOpportunity = (opportunityId: number) => {
     setExpandedOpportunity(expandedOpportunity === opportunityId ? null : opportunityId);
+  };
+
+  const handleLockOpportunity = (opportunityId: number, role: 'crypto' | 'money') => {
+    if (opportunityId === 1) {
+      // BTC opportunity
+      setCurrentOpportunity({
+        teamA: 'Binance',
+        teamB: 'Coinbase', 
+        sport: 'Crypto',
+        oddA: btcBinancePrice,
+        oddB: btcCoinbasePrice,
+        profitMargin: btcPercentage.toFixed(2),
+        userTeam: role === 'crypto' ? 'BTC Provider' : 'Money Provider',
+        userBookmaker: role === 'crypto' ? 'Binance' : 'Platform',
+        userOdd: role === 'crypto' ? btcBinancePrice : btcCoinbasePrice,
+        stakeAmount: role === 'crypto' ? btcAmount : (btcPool - btcTotalProfit),
+        depositAmount: role === 'crypto' ? btcPool : (btcPool - btcTotalProfit),
+        profitAmount: btcTotalProfit,
+        userProfitMargin: btcProfitPercentage.toFixed(2),
+        // Additional data for role-specific dialogs
+        cryptoType: 'BTC',
+        amount: btcAmount,
+        investmentAmount: btcPool,
+        revenueAmount: btcPool + btcTotalProfit,
+        platformWallet: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+        sellValue: btcPool,
+        edgeProfit: btcTotalProfit
+      });
+    } else {
+      // ETH opportunity
+      setCurrentOpportunity({
+        teamA: 'Coinbase',
+        teamB: 'Binance',
+        sport: 'Crypto', 
+        oddA: ethCoinbasePrice,
+        oddB: ethBinancePrice,
+        profitMargin: ethPercentage.toFixed(2),
+        userTeam: role === 'crypto' ? 'ETH Provider' : 'Money Provider',
+        userBookmaker: role === 'crypto' ? 'Coinbase' : 'Platform',
+        userOdd: role === 'crypto' ? ethCoinbasePrice : ethBinancePrice,
+        stakeAmount: role === 'crypto' ? ethAmount : (ethPool - ethTotalProfit),
+        depositAmount: role === 'crypto' ? ethPool : (ethPool - ethTotalProfit), 
+        profitAmount: ethTotalProfit,
+        userProfitMargin: ethProfitPercentage.toFixed(2),
+        // Additional data for role-specific dialogs
+        cryptoType: 'ETH', 
+        amount: ethAmount,
+        investmentAmount: ethPool,
+        revenueAmount: ethPool + ethTotalProfit,
+        platformWallet: '0x742d35Cc6635C0532925a3b8D6A85C11A5B9Cf8E',
+        sellValue: ethPool,
+        edgeProfit: ethTotalProfit
+      });
+    }
+    setMatchmakingOpen(true);
+  };
+
+  const handleMatchFound = () => {
+    setMatchmakingOpen(false);
+    // Determine if user is crypto or money provider based on the opportunity
+    if (currentOpportunity?.userTeam?.includes('Provider')) {
+      if (currentOpportunity.userTeam.includes('BTC') || currentOpportunity.userTeam.includes('ETH')) {
+        setCryptoProviderOpen(true);
+      } else {
+        setMoneyProviderOpen(true);
+      }
+    }
   };
 
   return (
@@ -167,9 +241,9 @@ const CryptoDashboard = () => {
                       </p>
                     </div>
 
-                    <Button className="w-full bg-green-600 hover:bg-green-700">
-                      <DollarSign className="mr-2 h-4 w-4" />
-                      Join Opportunity #1
+                    <Button className="w-full bg-green-600 hover:bg-green-700" onClick={() => handleLockOpportunity(1, 'crypto')}>
+                      <Lock className="mr-2 h-4 w-4" />
+                      Lock as BTC Provider
                     </Button>
                   </div>
                 </div>
@@ -274,9 +348,9 @@ const CryptoDashboard = () => {
                       </p>
                     </div>
 
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                      <Wallet className="mr-2 h-4 w-4" />
-                      Join Opportunity #2
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => handleLockOpportunity(2, 'money')}>
+                      <Lock className="mr-2 h-4 w-4" />
+                      Lock as Money Provider
                     </Button>
                   </div>
                 </div>
@@ -296,6 +370,30 @@ const CryptoDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Dialogs */}
+        {currentOpportunity && (
+          <>
+            <MatchmakingDialog
+              isOpen={matchmakingOpen}
+              onClose={() => setMatchmakingOpen(false)}
+              onMatchFound={handleMatchFound}
+              opportunity={currentOpportunity}
+            />
+            
+            <CryptoProviderDialog
+              isOpen={cryptoProviderOpen}
+              onClose={() => setCryptoProviderOpen(false)}
+              opportunity={currentOpportunity}
+            />
+            
+            <MoneyProviderDialog
+              isOpen={moneyProviderOpen}
+              onClose={() => setMoneyProviderOpen(false)}
+              opportunity={currentOpportunity}
+            />
+          </>
+        )}
       </div>
     </div>
   );
