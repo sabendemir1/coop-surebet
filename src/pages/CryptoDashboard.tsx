@@ -31,6 +31,13 @@ const CryptoDashboard = () => {
   const btcPool = 85000;
   const ethPool = 42000;
 
+  // Calculate amounts based on pool sizes
+  const btcAmount = btcPool / btcBinancePrice; // 0.85 BTC
+  const ethAmount = ethPool / ethCoinbasePrice; // 12 ETH
+  
+  const btcTotalProfit = btcAmount * btcProfitPerUser; // Total profit for BTC pool
+  const ethTotalProfit = ethAmount * ethProfitPerUser; // Total profit for ETH pool
+
   // Debug log to ensure variables are defined
   console.log('CryptoDashboard variables:', {
     btcBinancePrice,
@@ -144,19 +151,19 @@ const CryptoDashboard = () => {
                     <div className="bg-slate-800/50 p-4 rounded-lg mb-4">
                       <h5 className="font-semibold mb-2">What You Do:</h5>
                       <ol className="list-decimal list-inside space-y-1 text-sm">
-                        <li>Buy 1 BTC on Binance for ${btcBinancePrice.toLocaleString()}</li>
-                        <li>Transfer BTC to our platform</li>
+                        <li>Buy {btcAmount.toFixed(2)} BTC on Binance for ${btcPool.toLocaleString()}</li>
+                        <li>Transfer {btcAmount.toFixed(2)} BTC to our platform</li>
                         <li>Platform matches you with money provider</li>
-                        <li>Platform pays you ${(btcBinancePrice + btcProfitPerUser).toLocaleString()}</li>
+                        <li>Platform pays you ${(btcPool + btcTotalProfit).toLocaleString()}</li>
                       </ol>
                     </div>
                     
                     <div className="bg-green-900/20 p-4 rounded-lg border border-green-500/20 mb-4">
                       <h5 className="font-semibold text-green-400 mb-2">Your Investment & Profit:</h5>
-                      <p className="text-sm">💰 Investment: ${btcBinancePrice.toLocaleString()}</p>
-                      <p className="text-sm">📈 Revenue: ${(btcBinancePrice + btcProfitPerUser).toLocaleString()}</p>
+                      <p className="text-sm">💰 Investment: ${btcPool.toLocaleString()}</p>
+                      <p className="text-sm">📈 Revenue: ${(btcPool + btcTotalProfit).toLocaleString()}</p>
                       <p className="text-lg font-bold text-green-400">
-                        Net Profit: ${btcProfitPerUser.toFixed(2)}
+                        Net Profit: ${btcTotalProfit.toFixed(2)}
                       </p>
                     </div>
 
@@ -251,19 +258,19 @@ const CryptoDashboard = () => {
                     <div className="bg-slate-800/50 p-4 rounded-lg mb-4">
                       <h5 className="font-semibold mb-2">What You Do:</h5>
                       <ol className="list-decimal list-inside space-y-1 text-sm">
-                        <li>Deposit ${(ethBinancePrice - ethProfitPerUser).toLocaleString()} to platform</li>
+                        <li>Deposit ${(ethPool - ethTotalProfit).toLocaleString()} to platform</li>
                         <li>Platform matches you with ETH provider (buying from Coinbase)</li>
-                        <li>Receive 1 ETH from platform</li>
-                        <li>Sell ETH on Binance for ${ethBinancePrice.toLocaleString()}</li>
+                        <li>Receive {ethAmount.toFixed(0)} ETH from platform</li>
+                        <li>Sell {ethAmount.toFixed(0)} ETH on Binance for ${ethPool.toLocaleString()}</li>
                       </ol>
                     </div>
                     
                     <div className="bg-blue-900/20 p-4 rounded-lg border border-blue-500/20 mb-4">
                       <h5 className="font-semibold text-blue-400 mb-2">Your Deposit & Profit:</h5>
-                      <p className="text-sm">💳 Deposit: ${(ethBinancePrice - ethProfitPerUser).toLocaleString()}</p>
-                      <p className="text-sm">Ξ Receive: 1 ETH (sell for ${ethBinancePrice.toLocaleString()})</p>
+                      <p className="text-sm">💳 Deposit: ${(ethPool - ethTotalProfit).toLocaleString()}</p>
+                      <p className="text-sm">Ξ Receive: {ethAmount.toFixed(0)} ETH (sell for ${ethPool.toLocaleString()})</p>
                       <p className="text-lg font-bold text-blue-400">
-                        Net Profit: ${ethProfitPerUser.toFixed(2)}
+                        Net Profit: ${ethTotalProfit.toFixed(2)}
                       </p>
                     </div>
 
