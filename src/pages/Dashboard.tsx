@@ -26,6 +26,22 @@ const generateArbitrageOpportunities = () => {
     { teamA: "PSG", teamB: "Marseille", sport: "Football" },
   ];
 
+  const oddTypes = [
+    { value: "wins", requiresValue: false },
+    { value: "total_fouls", requiresValue: true },
+    { value: "total_goals", requiresValue: true },
+    { value: "total_shots", requiresValue: true },
+    { value: "total_shots_target", requiresValue: true },
+    { value: "handicap_a", requiresValue: false },
+    { value: "handicap_b", requiresValue: false },
+    { value: "team_a_combo", requiresValue: true },
+    { value: "team_b_combo", requiresValue: true },
+    { value: "corner_kicks", requiresValue: true },
+    { value: "yellow_cards", requiresValue: true },
+    { value: "first_half_goals", requiresValue: true },
+    { value: "possession", requiresValue: true }
+  ];
+
   return Array.from({ length: 8 }, (_, i) => {
     // Generate odds that create arbitrage (1/oddA + 1/oddB < 1)
     const oddA = 2.0 + Math.random() * 1.5; // 2.0 to 3.5
@@ -41,6 +57,11 @@ const generateArbitrageOpportunities = () => {
       bookmakerB = bookmakers[Math.floor(Math.random() * bookmakers.length)];
     }
 
+    // Random odd type
+    const randomOddType = oddTypes[Math.floor(Math.random() * oddTypes.length)];
+    const overUnderValue = randomOddType.requiresValue ? 
+      (Math.random() * 10 + 0.5).toFixed(1) : null;
+
     return {
       id: `arb_${i + 1}`,
       matchId: `match_${i + 1}`,
@@ -53,6 +74,8 @@ const generateArbitrageOpportunities = () => {
       oddB: Number(oddB.toFixed(2)),
       totalPool,
       expiresIn: Math.floor(Math.random() * 3600) + 300, // 5 minutes to 1 hour
+      oddType: randomOddType.value,
+      overUnderValue: overUnderValue ? parseFloat(overUnderValue) : null
     };
   });
 };

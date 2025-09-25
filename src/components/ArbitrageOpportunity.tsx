@@ -21,6 +21,8 @@ interface ArbitrageOpportunityProps {
     oddB: number;
     totalPool: number;
     expiresIn: number;
+    oddType: string;
+    overUnderValue?: number | null;
   };
   userBookmaker: string;
 }
@@ -39,7 +41,48 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
     return `https://${name}.com`;
   };
 
-  const { teamA, teamB, sport, bookmakerA, bookmakerB, oddA, oddB, totalPool } = opportunity;
+  const { teamA, teamB, sport, bookmakerA, bookmakerB, oddA, oddB, totalPool, oddType, overUnderValue } = opportunity;
+
+  // Get bet type display info
+  const getBetTypeDisplay = () => {
+    switch (oddType) {
+      case "wins": return { sideA: `${teamA} Win`, sideB: `${teamB} Win` };
+      case "total_fouls": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "total_goals": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "total_shots": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "total_shots_target": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "handicap_a": return { sideA: `${teamA} (+0.5)`, sideB: `${teamA} (-0.5)` };
+      case "handicap_b": return { sideA: `${teamB} (+0.5)`, sideB: `${teamB} (-0.5)` };
+      case "team_a_combo": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "team_b_combo": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "corner_kicks": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "yellow_cards": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "first_half_goals": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "possession": return { sideA: `Over ${overUnderValue}%`, sideB: `Under ${overUnderValue}%` };
+      default: return { sideA: `${teamA} Win`, sideB: `${teamB} Win` };
+    }
+  };
+
+  const getBetTypeTitle = () => {
+    switch (oddType) {
+      case "wins": return "Match Winner";
+      case "total_fouls": return "Total Fouls";
+      case "total_goals": return "Total Goals";
+      case "total_shots": return "Total Shots";
+      case "total_shots_target": return "Total Shots on Target";
+      case "handicap_a": return `${teamA} Handicap`;
+      case "handicap_b": return `${teamB} Handicap`;
+      case "team_a_combo": return `${teamA} Goals+Shots+SoT`;
+      case "team_b_combo": return `${teamB} Goals+Shots+SoT`;
+      case "corner_kicks": return "Total Corner Kicks";
+      case "yellow_cards": return "Total Yellow Cards";
+      case "first_half_goals": return "First Half Goals";
+      case "possession": return "Ball Possession %";
+      default: return "Match Winner";
+    }
+  };
+
+  const betDisplay = getBetTypeDisplay();
   
   // Calculate arbitrage
   const arbitrageFormula = (1 / oddA) + (1 / oddB);
@@ -118,6 +161,9 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
           <Badge variant="outline" className="bg-trust/10 border-trust/30">
             {sport}
           </Badge>
+          <Badge variant="secondary" className="bg-primary/10 border-primary/30">
+            {getBetTypeTitle()}
+          </Badge>
           <h3 className="font-semibold text-lg text-foreground">
             {teamA} vs {teamB}
           </h3>
@@ -144,7 +190,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
           <div className={`p-4 rounded-lg border-2 ${isUserOnSideA ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30'}`}>
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium">{teamA} Win</p>
+                <p className="font-medium">{betDisplay.sideA}</p>
                 <div className="flex items-center gap-2">
                   <p className="text-sm text-muted-foreground">{bookmakerA}</p>
                   <a 
@@ -170,7 +216,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
           <div className={`p-4 rounded-lg border-2 ${!isUserOnSideA ? 'border-primary bg-primary/5' : 'border-muted bg-muted/30'}`}>
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-medium">{teamB} Win</p>
+                <p className="font-medium">{betDisplay.sideB}</p>
                 <div className="flex items-center gap-2">
                   <p className="text-sm text-muted-foreground">{bookmakerB}</p>
                   <a 
@@ -204,7 +250,7 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
         }`}>
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Calculator className="w-4 h-4" />
-            {gameStatus === 'none' ? `Your Position: ${userTeam}` :
+            {gameStatus === 'none' ? `Your Position: ${isUserOnSideA ? betDisplay.sideA : betDisplay.sideB}` :
              gameStatus === 'matched' ? 'Match found - Preparing...' :
              gameStatus === 'executing' ? 'Executing bets...' :
              gameStatus === 'complete' ? 'Arbitrage Complete!' :

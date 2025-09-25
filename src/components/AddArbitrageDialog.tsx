@@ -23,12 +23,30 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
     oddB: "",
     bookmakerB: "",
     poolSize: "",
-    remainingTime: ""
+    remainingTime: "",
+    oddType: "",
+    overUnderValue: ""
   });
 
   const sports = [
     { value: "Football", label: "Football" },
     { value: "Basketball", label: "Basketball" }
+  ];
+
+  const oddTypes = [
+    { value: "wins", label: "Wins", requiresValue: false },
+    { value: "total_fouls", label: "Total Fouls (Over/Under)", requiresValue: true },
+    { value: "total_goals", label: "Total Goals (Over/Under)", requiresValue: true },
+    { value: "total_shots", label: "Total Shots (Over/Under)", requiresValue: true },
+    { value: "total_shots_target", label: "Total Shots on Target (Over/Under)", requiresValue: true },
+    { value: "handicap_a", label: "Handicap A (+0.5 vs -0.5)", requiresValue: false },
+    { value: "handicap_b", label: "Handicap B (+0.5 vs -0.5)", requiresValue: false },
+    { value: "team_a_combo", label: "TeamA Goals + Shots + Shots on Target", requiresValue: true },
+    { value: "team_b_combo", label: "TeamB Goals + Shots + Shots on Target", requiresValue: true },
+    { value: "corner_kicks", label: "Total Corner Kicks (Over/Under)", requiresValue: true },
+    { value: "yellow_cards", label: "Total Yellow Cards (Over/Under)", requiresValue: true },
+    { value: "first_half_goals", label: "First Half Goals (Over/Under)", requiresValue: true },
+    { value: "possession", label: "Ball Possession % (Over/Under)", requiresValue: true }
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -72,7 +90,9 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       oddB: oddB,
       totalPool: poolSize,
       expiresIn: remainingTime * 60, // Convert minutes to seconds
-      profitMargin: ((1 - arbitrageSum) * 100).toFixed(2)
+      profitMargin: ((1 - arbitrageSum) * 100).toFixed(2),
+      oddType: formData.oddType,
+      overUnderValue: formData.overUnderValue || null
     };
 
     onAddArbitrage(newOpportunity);
@@ -86,7 +106,9 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       oddB: "",
       bookmakerB: "",
       poolSize: "",
-      remainingTime: ""
+      remainingTime: "",
+      oddType: "",
+      overUnderValue: ""
     });
 
     toast({
@@ -123,6 +145,38 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
               </SelectContent>
             </Select>
           </div>
+
+          <div>
+            <Label htmlFor="oddType">Bet Type</Label>
+            <Select value={formData.oddType} onValueChange={(value) => handleInputChange("oddType", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select bet type" />
+              </SelectTrigger>
+              <SelectContent>
+                {oddTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.oddType && oddTypes.find(t => t.value === formData.oddType)?.requiresValue && (
+            <div>
+              <Label htmlFor="overUnderValue">Over/Under Value</Label>
+              <Input
+                id="overUnderValue"
+                type="number"
+                step="0.5"
+                min="0"
+                value={formData.overUnderValue}
+                onChange={(e) => handleInputChange("overUnderValue", e.target.value)}
+                placeholder="e.g., 2.5"
+                required
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -232,7 +286,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
             <Button 
               type="submit" 
               className="flex-1"
-              disabled={!formData.sport || !formData.teamA || !formData.teamB || !formData.oddA || !formData.oddB || !formData.bookmakerB || !formData.poolSize || !formData.remainingTime}
+              disabled={!formData.sport || !formData.oddType || !formData.teamA || !formData.teamB || !formData.oddA || !formData.oddB || !formData.bookmakerB || !formData.poolSize || !formData.remainingTime || (oddTypes.find(t => t.value === formData.oddType)?.requiresValue && !formData.overUnderValue)}
             >
               Add Arbitrage
             </Button>
