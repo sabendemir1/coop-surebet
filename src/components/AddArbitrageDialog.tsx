@@ -41,12 +41,16 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
     { value: "total_shots_target", label: "Total Shots on Target (Over/Under)", requiresValue: true },
     { value: "handicap_a", label: "Handicap A (+0.5 vs -0.5)", requiresValue: false },
     { value: "handicap_b", label: "Handicap B (+0.5 vs -0.5)", requiresValue: false },
-    { value: "team_a_combo", label: "TeamA Goals + Shots + Shots on Target", requiresValue: true },
-    { value: "team_b_combo", label: "TeamB Goals + Shots + Shots on Target", requiresValue: true },
+    { value: "team_a_goals", label: "TeamA Goals (Over/Under)", requiresValue: true },
+    { value: "team_a_shots", label: "TeamA Shots (Over/Under)", requiresValue: true },
+    { value: "team_a_shots_target", label: "TeamA Shots on Target (Over/Under)", requiresValue: true },
+    { value: "team_b_goals", label: "TeamB Goals (Over/Under)", requiresValue: true },
+    { value: "team_b_shots", label: "TeamB Shots (Over/Under)", requiresValue: true },
+    { value: "team_b_shots_target", label: "TeamB Shots on Target (Over/Under)", requiresValue: true },
     { value: "corner_kicks", label: "Total Corner Kicks (Over/Under)", requiresValue: true },
     { value: "yellow_cards", label: "Total Yellow Cards (Over/Under)", requiresValue: true },
     { value: "first_half_goals", label: "First Half Goals (Over/Under)", requiresValue: true },
-    { value: "possession", label: "Ball Possession % (Over/Under)", requiresValue: true }
+    { value: "possession_winner", label: "Ball Possession Winner", requiresValue: false }
   ];
 
   const handleInputChange = (field: string, value: string) => {

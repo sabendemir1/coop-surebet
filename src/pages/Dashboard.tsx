@@ -34,12 +34,16 @@ const generateArbitrageOpportunities = () => {
     { value: "total_shots_target", requiresValue: true },
     { value: "handicap_a", requiresValue: false },
     { value: "handicap_b", requiresValue: false },
-    { value: "team_a_combo", requiresValue: true },
-    { value: "team_b_combo", requiresValue: true },
+    { value: "team_a_goals", requiresValue: true },
+    { value: "team_a_shots", requiresValue: true },
+    { value: "team_a_shots_target", requiresValue: true },
+    { value: "team_b_goals", requiresValue: true },
+    { value: "team_b_shots", requiresValue: true },
+    { value: "team_b_shots_target", requiresValue: true },
     { value: "corner_kicks", requiresValue: true },
     { value: "yellow_cards", requiresValue: true },
     { value: "first_half_goals", requiresValue: true },
-    { value: "possession", requiresValue: true }
+    { value: "possession_winner", requiresValue: false }
   ];
 
   return Array.from({ length: 8 }, (_, i) => {

@@ -53,12 +53,16 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
       case "total_shots_target": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
       case "handicap_a": return { sideA: `${teamA} (+0.5)`, sideB: `${teamA} (-0.5)` };
       case "handicap_b": return { sideA: `${teamB} (+0.5)`, sideB: `${teamB} (-0.5)` };
-      case "team_a_combo": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
-      case "team_b_combo": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "team_a_goals": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "team_a_shots": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "team_a_shots_target": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "team_b_goals": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "team_b_shots": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
+      case "team_b_shots_target": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
       case "corner_kicks": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
       case "yellow_cards": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
       case "first_half_goals": return { sideA: `Over ${overUnderValue}`, sideB: `Under ${overUnderValue}` };
-      case "possession": return { sideA: `Over ${overUnderValue}%`, sideB: `Under ${overUnderValue}%` };
+      case "possession_winner": return { sideA: `${teamA} Higher`, sideB: `${teamB} Higher` };
       default: return { sideA: `${teamA} Win`, sideB: `${teamB} Win` };
     }
   };
@@ -72,12 +76,16 @@ const ArbitrageOpportunity = ({ opportunity, userBookmaker }: ArbitrageOpportuni
       case "total_shots_target": return "Total Shots on Target";
       case "handicap_a": return `${teamA} Handicap`;
       case "handicap_b": return `${teamB} Handicap`;
-      case "team_a_combo": return `${teamA} Goals+Shots+SoT`;
-      case "team_b_combo": return `${teamB} Goals+Shots+SoT`;
+      case "team_a_goals": return `${teamA} Goals`;
+      case "team_a_shots": return `${teamA} Shots`;
+      case "team_a_shots_target": return `${teamA} Shots on Target`;
+      case "team_b_goals": return `${teamB} Goals`;
+      case "team_b_shots": return `${teamB} Shots`;
+      case "team_b_shots_target": return `${teamB} Shots on Target`;
       case "corner_kicks": return "Total Corner Kicks";
       case "yellow_cards": return "Total Yellow Cards";
       case "first_half_goals": return "First Half Goals";
-      case "possession": return "Ball Possession %";
+      case "possession_winner": return "Ball Possession Winner";
       default: return "Match Winner";
     }
   };
