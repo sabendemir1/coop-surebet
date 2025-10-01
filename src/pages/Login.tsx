@@ -379,6 +379,7 @@ const Login = () => {
                     <SelectItem value="+7">🇷🇺 +7</SelectItem>
                     <SelectItem value="+82">🇰🇷 +82</SelectItem>
                     <SelectItem value="+27">🇿🇦 +27</SelectItem>
+                    <SelectItem value="+90">🇹🇷 +90</SelectItem>
                   </SelectContent>
                 </Select>
                 <Input
