@@ -6,9 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import StocksDashboard from "./pages/StocksDashboard";
-import CryptoDashboard from "./pages/CryptoDashboard";
-import ForexDashboard from "./pages/ForexDashboard";
 import Info from "./pages/Info";
 import NotFound from "./pages/NotFound";
 
@@ -23,9 +20,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/stocks-dashboard" element={<StocksDashboard />} />
-          <Route path="/crypto-dashboard" element={<CryptoDashboard />} />
-          <Route path="/forex-dashboard" element={<ForexDashboard />} />
           <Route path="/info" element={<Info />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

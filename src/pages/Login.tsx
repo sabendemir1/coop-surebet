@@ -7,10 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 
 const tradingAreas = [
-  { id: "sports", name: "Sports Betting", icon: "🏈" },
-  { id: "stocks", name: "Stocks", icon: "📈" },
-  { id: "crypto", name: "Crypto", icon: "₿" },
-  { id: "forex", name: "Forex", icon: "💱" }
+  { id: "sports", name: "Sports Betting", icon: "🏈" }
 ];
 
 const accountsByArea = {
@@ -27,42 +24,6 @@ const accountsByArea = {
     { id: "fanduel", name: "FanDuel (US)", country: "🇺🇸" },
     { id: "betclic", name: "Betclic (France)", country: "🇫🇷" },
     { id: "stake", name: "Stake (Curacao)", country: "🇨🇼" }
-  ],
-  stocks: [
-    { id: "interactive_brokers", name: "Interactive Brokers", country: "🇺🇸" },
-    { id: "charles_schwab", name: "Charles Schwab", country: "🇺🇸" },
-    { id: "fidelity", name: "Fidelity", country: "🇺🇸" },
-    { id: "etrade", name: "E*TRADE", country: "🇺🇸" },
-    { id: "td_ameritrade", name: "TD Ameritrade", country: "🇺🇸" },
-    { id: "robinhood", name: "Robinhood", country: "🇺🇸" },
-    { id: "trading212", name: "Trading 212", country: "🇬🇧" },
-    { id: "degiro", name: "DEGIRO", country: "🇳🇱" },
-    { id: "ig", name: "IG", country: "🇬🇧" },
-    { id: "plus500", name: "Plus500", country: "🇮🇱" }
-  ],
-  crypto: [
-    { id: "binance", name: "Binance", country: "🌍" },
-    { id: "coinbase", name: "Coinbase Pro", country: "🇺🇸" },
-    { id: "kraken", name: "Kraken", country: "🇺🇸" },
-    { id: "bitfinex", name: "Bitfinex", country: "🇻🇬" },
-    { id: "kucoin", name: "KuCoin", country: "🇸🇨" },
-    { id: "okx", name: "OKX", country: "🇸🇨" },
-    { id: "bybit", name: "Bybit", country: "🇸🇬" },
-    { id: "gemini", name: "Gemini", country: "🇺🇸" },
-    { id: "huobi", name: "Huobi", country: "🇸🇬" },
-    { id: "gate_io", name: "Gate.io", country: "🇰🇾" }
-  ],
-  forex: [
-    { id: "oanda", name: "OANDA", country: "🇺🇸" },
-    { id: "forex_com", name: "Forex.com", country: "🇺🇸" },
-    { id: "ig_forex", name: "IG Markets", country: "🇬🇧" },
-    { id: "pepperstone", name: "Pepperstone", country: "🇦🇺" },
-    { id: "ic_markets", name: "IC Markets", country: "🇦🇺" },
-    { id: "fxpro", name: "FxPro", country: "🇬🇧" },
-    { id: "xm", name: "XM", country: "🇨🇾" },
-    { id: "avatrade", name: "AvaTrade", country: "🇮🇪" },
-    { id: "etoro", name: "eToro", country: "🇮🇱" },
-    { id: "plus500_forex", name: "Plus500", country: "🇮🇱" }
   ]
 };
 
@@ -78,14 +39,7 @@ const Login = () => {
       localStorage.setItem("userArea", selectedArea);
       localStorage.setItem("userAccount", selectedAccount);
       
-      const routes = {
-        sports: "/dashboard",
-        stocks: "/stocks-dashboard", 
-        crypto: "/crypto-dashboard",
-        forex: "/forex-dashboard"
-      };
-      
-      navigate(routes[selectedArea as keyof typeof routes]);
+      navigate("/dashboard");
     }
   };
 
@@ -153,7 +107,7 @@ const Login = () => {
               <Label htmlFor="account">Your {tradingAreas.find(a => a.id === selectedArea)?.name} Account</Label>
               <Select value={selectedAccount} onValueChange={setSelectedAccount}>
                 <SelectTrigger className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40">
-                  <SelectValue placeholder={`Select your ${selectedArea === 'sports' ? 'bookmaker' : selectedArea === 'stocks' ? 'broker' : selectedArea === 'crypto' ? 'exchange' : 'broker'}`} />
+                  <SelectValue placeholder="Select your bookmaker" />
                 </SelectTrigger>
                 <SelectContent>
                   {currentAccounts.map((account) => (
