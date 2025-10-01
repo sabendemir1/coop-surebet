@@ -91,6 +91,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [userName, setUserName] = useState("");
   const [userBookmaker, setUserBookmaker] = useState("");
+  const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState(generateArbitrageOpportunities());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -134,6 +135,7 @@ const Dashboard = () => {
 
       setUserName(profile.name);
       setUserBookmaker(profile.bookmaker);
+      setBalance(Number(profile.balance_usd || 0));
       setLoading(false);
     };
 
@@ -219,6 +221,12 @@ const Dashboard = () => {
               <div className="text-right">
                 <p className="font-semibold text-foreground">Welcome, {userName}</p>
                 <p className="text-sm text-muted-foreground">Account: {userBookmaker}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-muted-foreground">Balance:</span>
+                  <span className="text-lg font-bold text-primary">
+                    ${balance.toFixed(2)}
+                  </span>
+                </div>
               </div>
               <Button variant="outline" onClick={() => navigate("/info")}>
                 <Info className="w-4 h-4 mr-2" />

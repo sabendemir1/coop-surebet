@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -31,11 +31,39 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [selectedAccount, setSelectedAccount] = useState("");
+  const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("+1");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Debounced username availability check
+  useEffect(() => {
+    if (!username || username.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    const checkUsername = async () => {
+      setCheckingUsername(true);
+      const { data, error } = await supabase.rpc('check_username_available', {
+        username_to_check: username
+      });
+      
+      if (!error) {
+        setUsernameAvailable(data);
+      }
+      setCheckingUsername(false);
+    };
+
+    const timeoutId = setTimeout(checkUsername, 300);
+    return () => clearTimeout(timeoutId);
+  }, [username]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -89,10 +117,29 @@ const Login = () => {
   };
 
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword || !name || !selectedAccount) {
+    if (!email || !password || !confirmPassword || !name || !selectedAccount || !username) {
       toast({
         title: "Error",
-        description: "Please fill in all fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate username format
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      toast({
+        title: "Error",
+        description: "Username must be 3-20 characters and contain only letters, numbers, and underscores",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (usernameAvailable === false) {
+      toast({
+        title: "Error",
+        description: "Username is already taken",
         variant: "destructive",
       });
       return;
@@ -118,14 +165,6 @@ const Login = () => {
 
     setLoading(true);
 
-    // Check if email already exists
-    const { data: existingUser } = await supabase.auth.signInWithPassword({
-      email,
-      password: "dummy-check-only",
-    });
-
-    // If sign in attempt doesn't return invalid credentials, it might mean user exists
-    // Better approach: try to sign up and handle the specific error
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -134,12 +173,14 @@ const Login = () => {
         data: {
           name,
           bookmaker: selectedAccount,
+          username,
+          phone_number: phoneNumber,
+          country_code: countryCode,
         },
       },
     });
 
     if (error) {
-      // Check for specific duplicate email error
       if (error.message.includes("already registered") || error.message.includes("already exists")) {
         toast({
           title: "Error",
@@ -154,7 +195,6 @@ const Login = () => {
         });
       }
     } else if (data.user && data.user.identities && data.user.identities.length === 0) {
-      // This happens when email is already registered but not confirmed
       toast({
         title: "Error",
         description: "This email is already registered. Please sign in or check your email for verification.",
@@ -171,6 +211,9 @@ const Login = () => {
       setConfirmPassword("");
       setName("");
       setSelectedAccount("");
+      setUsername("");
+      setPhoneNumber("");
+      setCountryCode("+1");
     }
     setLoading(false);
   };
@@ -258,7 +301,7 @@ const Login = () => {
 
           <TabsContent value="register" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="register-name">Your Name</Label>
+              <Label htmlFor="register-name">Full Name</Label>
               <Input
                 id="register-name"
                 placeholder="Enter your name"
@@ -266,6 +309,39 @@ const Login = () => {
                 onChange={(e) => setName(e.target.value)}
                 className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="register-username">Username</Label>
+              <div className="relative">
+                <Input
+                  id="register-username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                  placeholder="username"
+                  required
+                  className="pr-10 transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {checkingUsername ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : usernameAvailable === true ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : usernameAvailable === false ? (
+                    <X className="h-4 w-4 text-red-500" />
+                  ) : null}
+                </div>
+              </div>
+              {username.length > 0 && username.length < 3 && (
+                <p className="text-xs text-muted-foreground">At least 3 characters</p>
+              )}
+              {usernameAvailable === false && (
+                <p className="text-xs text-destructive">Username is already taken</p>
+              )}
+              {usernameAvailable === true && (
+                <p className="text-xs text-green-600">Username is available</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -278,6 +354,42 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="register-phone">Phone Number (Optional)</Label>
+              <div className="flex gap-2">
+                <Select value={countryCode} onValueChange={setCountryCode}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                    <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                    <SelectItem value="+33">🇫🇷 +33</SelectItem>
+                    <SelectItem value="+49">🇩🇪 +49</SelectItem>
+                    <SelectItem value="+34">🇪🇸 +34</SelectItem>
+                    <SelectItem value="+39">🇮🇹 +39</SelectItem>
+                    <SelectItem value="+86">🇨🇳 +86</SelectItem>
+                    <SelectItem value="+81">🇯🇵 +81</SelectItem>
+                    <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                    <SelectItem value="+55">🇧🇷 +55</SelectItem>
+                    <SelectItem value="+52">🇲🇽 +52</SelectItem>
+                    <SelectItem value="+61">🇦🇺 +61</SelectItem>
+                    <SelectItem value="+7">🇷🇺 +7</SelectItem>
+                    <SelectItem value="+82">🇰🇷 +82</SelectItem>
+                    <SelectItem value="+27">🇿🇦 +27</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="register-phone"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="123 456 7890"
+                  className="flex-1 transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">

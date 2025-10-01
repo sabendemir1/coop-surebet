@@ -219,25 +219,37 @@ export type Database = {
       }
       profiles: {
         Row: {
+          balance_usd: number
           bookmaker: string
+          country_code: string | null
           created_at: string
           id: string
           name: string
+          phone_number: string | null
           updated_at: string
+          username: string | null
         }
         Insert: {
+          balance_usd?: number
           bookmaker: string
+          country_code?: string | null
           created_at?: string
           id: string
           name: string
+          phone_number?: string | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
+          balance_usd?: number
           bookmaker?: string
+          country_code?: string | null
           created_at?: string
           id?: string
           name?: string
+          phone_number?: string | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -276,7 +288,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_username_available: {
+        Args: { username_to_check: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
