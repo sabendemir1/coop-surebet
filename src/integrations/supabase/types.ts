@@ -217,6 +217,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          bookmaker: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          bookmaker: string
+          created_at?: string
+          id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          bookmaker?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sports: {
         Row: {
           created_at: string | null

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, TrendingUp, DollarSign, Clock, Info, Plus, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import ArbitrageOpportunity from "@/components/ArbitrageOpportunity";
 import AddArbitrageDialog from "@/components/AddArbitrageDialog";
 import FilterDialog from "@/components/FilterDialog";
@@ -86,8 +88,10 @@ const generateArbitrageOpportunities = () => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [userName, setUserName] = useState("");
   const [userBookmaker, setUserBookmaker] = useState("");
+  const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState(generateArbitrageOpportunities());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
@@ -102,23 +106,55 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    const name = localStorage.getItem("userName");
-    const account = localStorage.getItem("userAccount");
-    const area = localStorage.getItem("userArea");
-    
-    if (!name || !account || area !== "sports") {
-      navigate("/");
-      return;
-    }
-    
-    setUserName(name);
-    setUserBookmaker(account);
-  }, [navigate]);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/");
+        return;
+      }
 
-  const handleLogout = () => {
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userAccount");
-    localStorage.removeItem("userArea");
+      // Fetch user profile
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error || !profile) {
+        toast({
+          title: "Error",
+          description: "Could not load profile",
+          variant: "destructive",
+        });
+        await supabase.auth.signOut();
+        navigate("/");
+        return;
+      }
+
+      setUserName(profile.name);
+      setUserBookmaker(profile.bookmaker);
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    });
     navigate("/");
   };
 
@@ -130,6 +166,14 @@ const Dashboard = () => {
   const handleApplyFilters = (newFilters) => {
     setFilters(newFilters);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center">
+        <div className="text-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   const filteredOpportunities = opportunities.filter(opp => {
     // Basic bookmaker filter

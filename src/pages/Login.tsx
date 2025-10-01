@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const bookmakers = [
   { id: "bet365", name: "Bet365 (UK)", country: "🇬🇧" },
@@ -22,18 +25,101 @@ const bookmakers = [
 ];
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [selectedAccount, setSelectedAccount] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleLogin = () => {
-    if (name && selectedAccount) {
-      localStorage.setItem("userName", name);
-      localStorage.setItem("userArea", "sports");
-      localStorage.setItem("userAccount", selectedAccount);
-      
-      navigate("/dashboard");
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate("/dashboard");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
     }
+
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Signed in successfully",
+      });
+    }
+    setLoading(false);
+  };
+
+  const handleSignUp = async () => {
+    if (!email || !password || !name || !selectedAccount) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          name,
+          bookmaker: selectedAccount,
+        },
+      },
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Account created successfully! Please check your email to verify your account.",
+      });
+    }
+    setLoading(false);
   };
 
   return (
@@ -60,48 +146,113 @@ const Login = () => {
           </p>
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.8s' }}>
-            <Label htmlFor="name">Your Name</Label>
-            <Input
-              id="name"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
-            />
-          </div>
+        <Tabs defaultValue="signin" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="register">Register</TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-2 animate-fade-in" style={{ animationDelay: '1s' }}>
-            <Label htmlFor="account">Your Bookmaker Account</Label>
-            <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-              <SelectTrigger className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40">
-                <SelectValue placeholder="Select your bookmaker" />
-              </SelectTrigger>
-              <SelectContent>
-                {bookmakers.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    <span className="flex items-center gap-2">
-                      {account.country} {account.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <TabsContent value="signin" className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="signin-email">Email</Label>
+              <Input
+                id="signin-email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
+              />
+            </div>
 
-          <div className="animate-fade-in" style={{ animationDelay: '1.2s' }}>
+            <div className="space-y-2">
+              <Label htmlFor="signin-password">Password</Label>
+              <Input
+                id="signin-password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
+              />
+            </div>
+
             <Button 
-              onClick={handleLogin} 
-              disabled={!name || !selectedAccount}
+              onClick={handleSignIn} 
+              disabled={loading}
               className="w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:hover:scale-100"
               variant="hero"
               size="lg"
             >
-              Start Trading
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="register" className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="register-name">Your Name</Label>
+              <Input
+                id="register-name"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="register-email">Email</Label>
+              <Input
+                id="register-email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="register-password">Password</Label>
+              <Input
+                id="register-password"
+                type="password"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="register-bookmaker">Your Bookmaker Account</Label>
+              <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+                <SelectTrigger className="transition-all duration-300 focus:scale-[1.02] hover:border-primary/40">
+                  <SelectValue placeholder="Select your bookmaker" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bookmakers.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <span className="flex items-center gap-2">
+                        {account.country} {account.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button 
+              onClick={handleSignUp} 
+              disabled={loading}
+              className="w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:hover:scale-100"
+              variant="hero"
+              size="lg"
+            >
+              {loading ? "Creating Account..." : "Create Account"}
+            </Button>
+          </TabsContent>
+        </Tabs>
 
         <div className="mt-8 text-center animate-fade-in" style={{ animationDelay: '1.4s' }}>
           <Button 
