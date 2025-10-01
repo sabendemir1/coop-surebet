@@ -117,7 +117,16 @@ const Login = () => {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    // Check if email already exists
+    const { data: existingUser } = await supabase.auth.signInWithPassword({
+      email,
+      password: "dummy-check-only",
+    });
+
+    // If sign in attempt doesn't return invalid credentials, it might mean user exists
+    // Better approach: try to sign up and handle the specific error
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -130,9 +139,25 @@ const Login = () => {
     });
 
     if (error) {
+      // Check for specific duplicate email error
+      if (error.message.includes("already registered") || error.message.includes("already exists")) {
+        toast({
+          title: "Error",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+      // This happens when email is already registered but not confirmed
       toast({
         title: "Error",
-        description: error.message,
+        description: "This email is already registered. Please sign in or check your email for verification.",
         variant: "destructive",
       });
     } else {
@@ -140,6 +165,12 @@ const Login = () => {
         title: "Success",
         description: "Account created successfully! Please check your email to verify your account.",
       });
+      // Clear form
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setName("");
+      setSelectedAccount("");
     }
     setLoading(false);
   };
