@@ -165,12 +165,6 @@ const Login = () => {
 
     setLoading(true);
 
-    // Check if email already exists
-    const { data: existingUser } = await supabase.auth.signInWithPassword({
-      email,
-      password: "dummy_check_12345", // This will fail but we only care about the error message
-    });
-
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -186,8 +180,15 @@ const Login = () => {
       },
     });
 
+    // Debug logging to understand the response structure
+    console.log('Signup response:', { data, error });
+
     if (error) {
-      if (error.message.includes("already registered") || error.message.includes("already exists") || error.message.includes("User already registered")) {
+      // Check for specific error messages that indicate email already exists
+      if (error.message.includes("already registered") || 
+          error.message.includes("already exists") || 
+          error.message.includes("User already registered") ||
+          error.message.includes("already been registered")) {
         toast({
           title: "Error",
           description: "This email is already registered. Please sign in instead.",
@@ -200,41 +201,59 @@ const Login = () => {
           variant: "destructive",
         });
       }
-    } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+    } else if (data.user) {
+      // Multiple checks to determine if user already exists
+      const hasNoIdentities = data.user.identities && data.user.identities.length === 0;
+      const userCreatedAt = new Date(data.user.created_at);
+      const now = new Date();
+      const timeDifference = now.getTime() - userCreatedAt.getTime();
+      const isOldUser = timeDifference > 30000; // 30 second buffer for safety
+      
+      // Check if this is an existing user (multiple indicators)
+      if (hasNoIdentities || isOldUser) {
+        toast({
+          title: "Error",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+      } else if (!data.session) {
+        // New account created but needs email verification
+        toast({
+          title: "Success",
+          description: "Account created successfully! Please check your email to verify your account.",
+        });
+        // Clear form
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setName("");
+        setSelectedAccount("");
+        setUsername("");
+        setPhoneNumber("");
+        setCountryCode("+1");
+      } else {
+        // New account created and user is automatically signed in
+        toast({
+          title: "Success",
+          description: "Account created successfully!",
+        });
+        // Clear form
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setName("");
+        setSelectedAccount("");
+        setUsername("");
+        setPhoneNumber("");
+        setCountryCode("+1");
+      }
+    } else {
+      // Unexpected response
       toast({
         title: "Error",
-        description: "This email is already registered. Please sign in or check your email for verification.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-    } else if (data.user && !data.session) {
-      // Account created but needs email verification
-      toast({
-        title: "Success",
-        description: "Account created successfully! Please check your email to verify your account.",
-      });
-      // Clear form
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setName("");
-      setSelectedAccount("");
-      setUsername("");
-      setPhoneNumber("");
-      setCountryCode("+1");
-    } else {
-      toast({
-        title: "Success",
-        description: "Account created successfully! Please check your email to verify your account.",
-      });
-      // Clear form
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setName("");
-      setSelectedAccount("");
-      setUsername("");
-      setPhoneNumber("");
-      setCountryCode("+1");
     }
     setLoading(false);
   };
