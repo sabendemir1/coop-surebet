@@ -136,6 +136,27 @@ const Login = () => {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate phone number if provided
+    if (phoneNumber && !/^[\d\s\-\(\)\+]{10,15}$/.test(phoneNumber)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (usernameAvailable === false) {
       toast({
         title: "Error",
@@ -179,9 +200,6 @@ const Login = () => {
         },
       },
     });
-
-    // Debug logging to understand the response structure
-    console.log('Signup response:', { data, error });
 
     if (error) {
       // Check for specific error messages that indicate email already exists
