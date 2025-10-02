@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { EntityType } from "@/types/betting";
-import { GlobalMarketId, TeamMarketId, MARKET_DISPLAY } from "@/types/marketEnums";
+import { GlobalMarketId, TeamMarketId, PlayerMarketId, MARKET_DISPLAY } from "@/types/marketEnums";
 
 interface AddArbitrageDialogProps {
   open: boolean;
@@ -22,7 +22,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
     homeTeam: "",
     awayTeam: "",
     entity: "global" as EntityType,
-    marketId: "" as GlobalMarketId | TeamMarketId | "",
+    marketId: "" as GlobalMarketId | TeamMarketId | PlayerMarketId | "",
     line: "",
     oddA: "",
     oddB: "",
@@ -34,7 +34,8 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
   const entityTypes: { value: EntityType; label: string }[] = [
     { value: "global", label: "Match Level" },
     { value: "home", label: "Home Team" },
-    { value: "away", label: "Away Team" }
+    { value: "away", label: "Away Team" },
+    { value: "player", label: "Player" }
   ];
 
   const globalMarkets: { id: GlobalMarketId; requiresLine: boolean }[] = [
@@ -57,9 +58,24 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
     { id: "team_cards_ou", requiresLine: true }
   ];
 
+  const playerMarkets: { id: PlayerMarketId; requiresLine: boolean }[] = [
+    { id: "anytime_goalscorer", requiresLine: false },
+    { id: "first_goalscorer", requiresLine: false },
+    { id: "last_goalscorer", requiresLine: false },
+    { id: "player_carded", requiresLine: false },
+    { id: "player_sent_off", requiresLine: false },
+    { id: "player_shots_on_target_ou", requiresLine: true },
+    { id: "player_assists_ou", requiresLine: true },
+    { id: "player_passes_ou", requiresLine: true },
+    { id: "player_tackles_ou", requiresLine: true },
+    { id: "player_fouls_committed_ou", requiresLine: true }
+  ];
+
   const getAvailableMarkets = () => {
     if (formData.entity === "global") {
       return globalMarkets.map(m => ({ id: m.id, label: MARKET_DISPLAY[m.id], requiresLine: m.requiresLine }));
+    } else if (formData.entity === "player") {
+      return playerMarkets.map(m => ({ id: m.id, label: MARKET_DISPLAY[m.id], requiresLine: m.requiresLine }));
     } else {
       return teamMarkets.map(m => ({ id: m.id, label: MARKET_DISPLAY[m.id], requiresLine: m.requiresLine }));
     }
@@ -113,7 +129,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       },
       market: {
         id: formData.marketId,
-        name: MARKET_DISPLAY[formData.marketId as GlobalMarketId | TeamMarketId],
+        name: MARKET_DISPLAY[formData.marketId as GlobalMarketId | TeamMarketId | PlayerMarketId],
         params: formData.line ? { line: parseFloat(formData.line) } : undefined
       },
       bookmakerA: userBookmaker,
