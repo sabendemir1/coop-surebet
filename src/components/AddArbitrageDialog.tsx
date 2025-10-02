@@ -5,8 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { EntityType } from "@/types/betting";
-import { GlobalMarketId, TeamMarketId, PlayerMarketId, MARKET_DISPLAY } from "@/types/marketEnums";
 
 interface AddArbitrageDialogProps {
   open: boolean;
@@ -18,71 +16,42 @@ interface AddArbitrageDialogProps {
 const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker }: AddArbitrageDialogProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    sport: "football",
-    homeTeam: "",
-    awayTeam: "",
-    entity: "global" as EntityType,
-    marketId: "" as GlobalMarketId | TeamMarketId | PlayerMarketId | "",
-    line: "",
+    sport: "",
+    teamA: "",
+    teamB: "",
     oddA: "",
     oddB: "",
     bookmakerB: "",
     poolSize: "",
-    remainingTime: ""
+    remainingTime: "",
+    oddType: "",
+    overUnderValue: ""
   });
 
-  const entityTypes: { value: EntityType; label: string }[] = [
-    { value: "global", label: "Match Level" },
-    { value: "home", label: "Home Team" },
-    { value: "away", label: "Away Team" },
-    { value: "player", label: "Player" }
+  const sports = [
+    { value: "Football", label: "Football" },
+    { value: "Basketball", label: "Basketball" }
   ];
 
-  const globalMarkets: { id: GlobalMarketId; requiresLine: boolean }[] = [
-    { id: "ft_1x2", requiresLine: false },
-    { id: "total_goals_ou", requiresLine: true },
-    { id: "btts", requiresLine: false },
-    { id: "double_chance", requiresLine: false },
-    { id: "dnb", requiresLine: false },
-    { id: "total_corners_ou", requiresLine: true },
-    { id: "total_cards_ou", requiresLine: true },
-    { id: "first_half_result", requiresLine: false }
+  const oddTypes = [
+    { value: "wins", label: "Wins", requiresValue: false },
+    { value: "total_fouls", label: "Total Fouls (Over/Under)", requiresValue: true },
+    { value: "total_goals", label: "Total Goals (Over/Under)", requiresValue: true },
+    { value: "total_shots", label: "Total Shots (Over/Under)", requiresValue: true },
+    { value: "total_shots_target", label: "Total Shots on Target (Over/Under)", requiresValue: true },
+    { value: "handicap_a", label: "Handicap A (+0.5 vs -0.5)", requiresValue: false },
+    { value: "handicap_b", label: "Handicap B (+0.5 vs -0.5)", requiresValue: false },
+    { value: "team_a_goals", label: "TeamA Goals (Over/Under)", requiresValue: true },
+    { value: "team_a_shots", label: "TeamA Shots (Over/Under)", requiresValue: true },
+    { value: "team_a_shots_target", label: "TeamA Shots on Target (Over/Under)", requiresValue: true },
+    { value: "team_b_goals", label: "TeamB Goals (Over/Under)", requiresValue: true },
+    { value: "team_b_shots", label: "TeamB Shots (Over/Under)", requiresValue: true },
+    { value: "team_b_shots_target", label: "TeamB Shots on Target (Over/Under)", requiresValue: true },
+    { value: "corner_kicks", label: "Total Corner Kicks (Over/Under)", requiresValue: true },
+    { value: "yellow_cards", label: "Total Yellow Cards (Over/Under)", requiresValue: true },
+    { value: "first_half_goals", label: "First Half Goals (Over/Under)", requiresValue: true },
+    { value: "possession_winner", label: "Ball Possession Winner", requiresValue: false }
   ];
-
-  const teamMarkets: { id: TeamMarketId; requiresLine: boolean }[] = [
-    { id: "team_total_goals_ou", requiresLine: true },
-    { id: "asian_handicap", requiresLine: true },
-    { id: "handicap", requiresLine: true },
-    { id: "clean_sheet", requiresLine: false },
-    { id: "team_corners_ou", requiresLine: true },
-    { id: "team_cards_ou", requiresLine: true }
-  ];
-
-  const playerMarkets: { id: PlayerMarketId; requiresLine: boolean }[] = [
-    { id: "anytime_goalscorer", requiresLine: false },
-    { id: "first_goalscorer", requiresLine: false },
-    { id: "last_goalscorer", requiresLine: false },
-    { id: "player_carded", requiresLine: false },
-    { id: "player_sent_off", requiresLine: false },
-    { id: "player_shots_on_target_ou", requiresLine: true },
-    { id: "player_assists_ou", requiresLine: true },
-    { id: "player_passes_ou", requiresLine: true },
-    { id: "player_tackles_ou", requiresLine: true },
-    { id: "player_fouls_committed_ou", requiresLine: true }
-  ];
-
-  const getAvailableMarkets = () => {
-    if (formData.entity === "global") {
-      return globalMarkets.map(m => ({ id: m.id, label: MARKET_DISPLAY[m.id], requiresLine: m.requiresLine }));
-    } else if (formData.entity === "player") {
-      return playerMarkets.map(m => ({ id: m.id, label: MARKET_DISPLAY[m.id], requiresLine: m.requiresLine }));
-    } else {
-      return teamMarkets.map(m => ({ id: m.id, label: MARKET_DISPLAY[m.id], requiresLine: m.requiresLine }));
-    }
-  };
-
-  const selectedMarket = getAvailableMarkets().find(m => m.id === formData.marketId);
-  const requiresLine = selectedMarket?.requiresLine ?? false;
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -112,55 +81,43 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       return;
     }
 
-    // Create new opportunity using BetSelection structure
+    // Create new opportunity
     const newOpportunity = {
       id: `arb_manual_${Date.now()}`,
       matchId: `match_manual_${Date.now()}`,
+      teamA: formData.teamA,
+      teamB: formData.teamB,
       sport: formData.sport,
-      match: {
-        id: `match_manual_${Date.now()}`,
-        home: { id: "home_team", name: formData.homeTeam },
-        away: { id: "away_team", name: formData.awayTeam },
-        start_date: new Date(Date.now() + remainingTime * 60 * 1000).toISOString()
-      },
-      entity: {
-        type: formData.entity,
-        ref: null
-      },
-      market: {
-        id: formData.marketId,
-        name: MARKET_DISPLAY[formData.marketId as GlobalMarketId | TeamMarketId | PlayerMarketId],
-        params: formData.line ? { line: parseFloat(formData.line) } : undefined
-      },
       bookmakerA: userBookmaker,
       bookmakerB: formData.bookmakerB,
       oddA: oddA,
       oddB: oddB,
       totalPool: poolSize,
-      expiresIn: remainingTime * 60,
-      profitMargin: ((1 - arbitrageSum) * 100).toFixed(2)
+      expiresIn: remainingTime * 60, // Convert minutes to seconds
+      profitMargin: ((1 - arbitrageSum) * 100).toFixed(2),
+      oddType: formData.oddType,
+      overUnderValue: formData.overUnderValue || null
     };
 
     onAddArbitrage(newOpportunity);
     
     // Reset form
     setFormData({
-      sport: "football",
-      homeTeam: "",
-      awayTeam: "",
-      entity: "global",
-      marketId: "",
-      line: "",
+      sport: "",
+      teamA: "",
+      teamB: "",
       oddA: "",
       oddB: "",
       bookmakerB: "",
       poolSize: "",
-      remainingTime: ""
+      remainingTime: "",
+      oddType: "",
+      overUnderValue: ""
     });
 
     toast({
       title: "Arbitrage Added",
-      description: `${formData.homeTeam} vs ${formData.awayTeam} opportunity created with ${((1 - arbitrageSum) * 100).toFixed(2)}% profit margin`
+      description: `${formData.teamA} vs ${formData.teamB} opportunity created with ${((1 - arbitrageSum) * 100).toFixed(2)}% profit margin`
     });
   };
 
@@ -177,78 +134,76 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="sport">Sport</Label>
+            <Select value={formData.sport} onValueChange={(value) => handleInputChange("sport", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a sport" />
+              </SelectTrigger>
+              <SelectContent>
+                {sports.map((sport) => (
+                  <SelectItem key={sport.value} value={sport.value}>
+                    {sport.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="oddType">Bet Type</Label>
+            <Select value={formData.oddType} onValueChange={(value) => handleInputChange("oddType", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select bet type" />
+              </SelectTrigger>
+              <SelectContent>
+                {oddTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.oddType && oddTypes.find(t => t.value === formData.oddType)?.requiresValue && (
+            <div>
+              <Label htmlFor="overUnderValue">Over/Under Value</Label>
+              <Input
+                id="overUnderValue"
+                type="number"
+                step="0.5"
+                min="0"
+                value={formData.overUnderValue}
+                onChange={(e) => handleInputChange("overUnderValue", e.target.value)}
+                placeholder="e.g., 2.5"
+                required
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="homeTeam">Home Team</Label>
+              <Label htmlFor="teamA">Team A</Label>
               <Input
-                id="homeTeam"
-                value={formData.homeTeam}
-                onChange={(e) => handleInputChange("homeTeam", e.target.value)}
+                id="teamA"
+                value={formData.teamA}
+                onChange={(e) => handleInputChange("teamA", e.target.value)}
                 placeholder="e.g., PSG"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="awayTeam">Away Team</Label>
+              <Label htmlFor="teamB">Team B</Label>
               <Input
-                id="awayTeam"
-                value={formData.awayTeam}
-                onChange={(e) => handleInputChange("awayTeam", e.target.value)}
+                id="teamB"
+                value={formData.teamB}
+                onChange={(e) => handleInputChange("teamB", e.target.value)}
                 placeholder="e.g., Marseille"
                 required
               />
             </div>
           </div>
-
-          <div>
-            <Label htmlFor="entity">Entity Type</Label>
-            <Select value={formData.entity} onValueChange={(value) => {
-              handleInputChange("entity", value);
-              handleInputChange("marketId", ""); // Reset market when entity changes
-            }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select entity type" />
-              </SelectTrigger>
-              <SelectContent>
-                {entityTypes.map((entity) => (
-                  <SelectItem key={entity.value} value={entity.value}>
-                    {entity.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="marketId">Market</Label>
-            <Select value={formData.marketId} onValueChange={(value) => handleInputChange("marketId", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select market type" />
-              </SelectTrigger>
-              <SelectContent>
-                {getAvailableMarkets().map((market) => (
-                  <SelectItem key={market.id} value={market.id}>
-                    {market.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {requiresLine && (
-            <div>
-              <Label htmlFor="line">Line Value</Label>
-              <Input
-                id="line"
-                type="number"
-                step="0.25"
-                value={formData.line}
-                onChange={(e) => handleInputChange("line", e.target.value)}
-                placeholder="e.g., 2.5 or -0.5"
-                required
-              />
-            </div>
-          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -335,7 +290,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
             <Button 
               type="submit" 
               className="flex-1"
-              disabled={!formData.homeTeam || !formData.awayTeam || !formData.marketId || !formData.oddA || !formData.oddB || !formData.bookmakerB || !formData.poolSize || !formData.remainingTime || (requiresLine && !formData.line)}
+              disabled={!formData.sport || !formData.oddType || !formData.teamA || !formData.teamB || !formData.oddA || !formData.oddB || !formData.bookmakerB || !formData.poolSize || !formData.remainingTime || (oddTypes.find(t => t.value === formData.oddType)?.requiresValue && !formData.overUnderValue)}
             >
               Add Arbitrage
             </Button>
