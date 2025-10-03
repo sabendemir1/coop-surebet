@@ -10,6 +10,21 @@ import { BetType, Period, Concern, AnyBet } from "@/types/betting";
 import { FootballMarkets } from "@/lib/markets";
 import { ArbOpportunity } from "@/lib/arbEngine";
 
+const bookmakers = [
+  { id: "bet365", name: "Bet365 (UK)", country: "🇬🇧" },
+  { id: "pinnacle", name: "Pinnacle (Curacao)", country: "🇨🇼" },
+  { id: "betfair", name: "Betfair (UK)", country: "🇬🇧" },
+  { id: "unibet", name: "Unibet (Malta)", country: "🇲🇹" },
+  { id: "betway", name: "Betway (Malta)", country: "🇲🇹" },
+  { id: "williamhill", name: "William Hill (UK)", country: "🇬🇧" },
+  { id: "bwin", name: "BWin (Austria)", country: "🇦🇹" },
+  { id: "betsson", name: "Betsson (Sweden)", country: "🇸🇪" },
+  { id: "draftkings", name: "DraftKings (US)", country: "🇺🇸" },
+  { id: "fanduel", name: "FanDuel (US)", country: "🇺🇸" },
+  { id: "betclic", name: "Betclic (France)", country: "🇫🇷" },
+  { id: "stake", name: "Stake (Curacao)", country: "🇨🇼" }
+];
+
 interface AddArbitrageDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -57,6 +72,8 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
   const [betA, setBetA] = useState<BetFormData>(emptyBetForm);
   const [betB, setBetB] = useState<BetFormData>(emptyBetForm);
   const [poolSize, setPoolSize] = useState("");
+  const [expiryMinutes, setExpiryMinutes] = useState("60");
+  const [expirySeconds, setExpirySeconds] = useState("0");
 
   const getAvailableMetrics = (betType: BetType | ""): string[] => {
     if (!betType) return [];
@@ -166,6 +183,8 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
         return;
       }
 
+      const totalExpirySeconds = (parseInt(expiryMinutes) * 60) + parseInt(expirySeconds);
+
       const opportunity = {
         id: `arb_manual_${Date.now()}`,
         matchId: bet1.gameId,
@@ -177,7 +196,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
         oddA: bet1.price,
         oddB: bet2.price,
         totalPool: pool,
-        expiresIn: 3600,
+        expiresIn: totalExpirySeconds,
         profitMargin: (arb.edge * 100).toFixed(2),
         betA: bet1,
         betB: bet2,
@@ -188,6 +207,8 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       setBetA(emptyBetForm);
       setBetB(emptyBetForm);
       setPoolSize("");
+      setExpiryMinutes("60");
+      setExpirySeconds("0");
       setActiveTab("general");
 
       toast({
@@ -272,11 +293,20 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
 
         <div>
           <Label>Bookmaker</Label>
-          <Input
-            value={bet.bookmaker}
-            onChange={(e) => updateField("bookmaker", e.target.value)}
-            placeholder="e.g., Bet365"
-          />
+          <Select value={bet.bookmaker} onValueChange={(value) => updateField("bookmaker", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select bookmaker" />
+            </SelectTrigger>
+            <SelectContent>
+              {bookmakers.map((bookmaker) => (
+                <SelectItem key={bookmaker.id} value={bookmaker.id}>
+                  <span className="flex items-center gap-2">
+                    {bookmaker.country} {bookmaker.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -481,6 +511,38 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
                 onChange={(e) => setPoolSize(e.target.value)}
                 placeholder="e.g., 1000"
               />
+            </div>
+
+            <div>
+              <Label>Expires In</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Minutes</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="999"
+                    value={expiryMinutes}
+                    onChange={(e) => setExpiryMinutes(e.target.value)}
+                    placeholder="60"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Seconds</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={expirySeconds}
+                    onChange={(e) => setExpirySeconds(e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Total: {expiryMinutes}:{expirySeconds.padStart(2, '0')} 
+                ({(parseInt(expiryMinutes) * 60) + parseInt(expirySeconds)} seconds)
+              </p>
             </div>
 
             <div className="p-4 bg-muted rounded-lg space-y-2">
