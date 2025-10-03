@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { BetType, Period, Concern, AnyBet } from "@/types/betting";
+import { FootballMarkets } from "@/lib/markets";
+import { ArbOpportunity } from "@/lib/arbEngine";
 
 interface AddArbitrageDialogProps {
   open: boolean;
@@ -13,289 +17,515 @@ interface AddArbitrageDialogProps {
   userBookmaker: string;
 }
 
+interface BetFormData {
+  sport: "FOOTBALL";
+  league: string;
+  gameId: string;
+  teamHome: string;
+  teamAway: string;
+  bookmaker: string;
+  period: Period | "";
+  concern: Concern | "";
+  odds: string;
+  betType: BetType | "";
+  metric: string;
+  line: string;
+  side: "OVER" | "UNDER" | "YES" | "NO" | "";
+  selectionCode: string;
+}
+
+const emptyBetForm: BetFormData = {
+  sport: "FOOTBALL",
+  league: "",
+  gameId: "",
+  teamHome: "",
+  teamAway: "",
+  bookmaker: "",
+  period: "",
+  concern: "",
+  odds: "",
+  betType: "",
+  metric: "",
+  line: "",
+  side: "",
+  selectionCode: "",
+};
+
 const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker }: AddArbitrageDialogProps) => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    sport: "",
-    teamA: "",
-    teamB: "",
-    oddA: "",
-    oddB: "",
-    bookmakerB: "",
-    poolSize: "",
-    remainingTime: "",
-    oddType: "",
-    overUnderValue: ""
-  });
+  const [activeTab, setActiveTab] = useState("general");
+  const [betA, setBetA] = useState<BetFormData>(emptyBetForm);
+  const [betB, setBetB] = useState<BetFormData>(emptyBetForm);
+  const [poolSize, setPoolSize] = useState("");
 
-  const sports = [
-    { value: "Football", label: "Football" },
-    { value: "Basketball", label: "Basketball" }
-  ];
-
-  const oddTypes = [
-    { value: "wins", label: "Wins", requiresValue: false },
-    { value: "total_fouls", label: "Total Fouls (Over/Under)", requiresValue: true },
-    { value: "total_goals", label: "Total Goals (Over/Under)", requiresValue: true },
-    { value: "total_shots", label: "Total Shots (Over/Under)", requiresValue: true },
-    { value: "total_shots_target", label: "Total Shots on Target (Over/Under)", requiresValue: true },
-    { value: "handicap_a", label: "Handicap A (+0.5 vs -0.5)", requiresValue: false },
-    { value: "handicap_b", label: "Handicap B (+0.5 vs -0.5)", requiresValue: false },
-    { value: "team_a_goals", label: "TeamA Goals (Over/Under)", requiresValue: true },
-    { value: "team_a_shots", label: "TeamA Shots (Over/Under)", requiresValue: true },
-    { value: "team_a_shots_target", label: "TeamA Shots on Target (Over/Under)", requiresValue: true },
-    { value: "team_b_goals", label: "TeamB Goals (Over/Under)", requiresValue: true },
-    { value: "team_b_shots", label: "TeamB Shots (Over/Under)", requiresValue: true },
-    { value: "team_b_shots_target", label: "TeamB Shots on Target (Over/Under)", requiresValue: true },
-    { value: "corner_kicks", label: "Total Corner Kicks (Over/Under)", requiresValue: true },
-    { value: "yellow_cards", label: "Total Yellow Cards (Over/Under)", requiresValue: true },
-    { value: "first_half_goals", label: "First Half Goals (Over/Under)", requiresValue: true },
-    { value: "possession_winner", label: "Ball Possession Winner", requiresValue: false }
-  ];
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const getAvailableMetrics = (betType: BetType | ""): string[] => {
+    if (!betType) return [];
+    return Object.entries(FootballMarkets)
+      .filter(([_, info]) => info.betType === betType)
+      .map(([key, _]) => key);
   };
 
-  const calculateArbitrage = (oddA: number, oddB: number) => {
-    return (1 / oddA) + (1 / oddB);
+  const formToBet = (form: BetFormData): AnyBet | null => {
+    if (!form.betType || !form.metric || !form.odds || !form.period || !form.concern) {
+      return null;
+    }
+
+    const price = parseFloat(form.odds);
+    if (isNaN(price) || price <= 1) return null;
+
+    const baseProps = {
+      id: `bet_${Date.now()}_${Math.random()}`,
+      sport: form.sport,
+      league: form.league,
+      gameId: form.gameId,
+      teamHome: form.teamHome,
+      teamAway: form.teamAway,
+      bookmaker: form.bookmaker,
+      period: form.period as Period,
+      concern: form.concern as Concern,
+      metric: form.metric,
+      price,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    switch (form.betType) {
+      case BetType.OVER_UNDER: {
+        const line = parseFloat(form.line);
+        if (isNaN(line) || !form.side || (form.side !== "OVER" && form.side !== "UNDER")) return null;
+        return {
+          ...baseProps,
+          marketType: BetType.OVER_UNDER,
+          line,
+          side: form.side as "OVER" | "UNDER",
+        };
+      }
+      case BetType.BINARY: {
+        if (!form.side || (form.side !== "YES" && form.side !== "NO")) return null;
+        return {
+          ...baseProps,
+          marketType: BetType.BINARY,
+          side: form.side as "YES" | "NO",
+        };
+      }
+      case BetType.HANDICAP: {
+        const line = parseFloat(form.line);
+        if (isNaN(line)) return null;
+        return {
+          ...baseProps,
+          marketType: BetType.HANDICAP,
+          line,
+        };
+      }
+      case BetType.EXACT: {
+        if (!form.selectionCode) return null;
+        return {
+          ...baseProps,
+          marketType: BetType.EXACT,
+          marketKey: form.metric,
+          selectionCode: form.selectionCode,
+        };
+      }
+      default:
+        return null;
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const oddA = parseFloat(formData.oddA);
-    const oddB = parseFloat(formData.oddB);
-    const poolSize = parseFloat(formData.poolSize);
-    const remainingTime = parseInt(formData.remainingTime);
+  const handleSubmit = () => {
+    const bet1 = formToBet(betA);
+    const bet2 = formToBet(betB);
 
-    // Validate arbitrage opportunity
-    const arbitrageSum = calculateArbitrage(oddA, oddB);
-    
-    if (arbitrageSum >= 1) {
+    if (!bet1 || !bet2) {
       toast({
-        title: "No Arbitrage Found",
-        description: "Can't add - the odds don't create an arbitrage opportunity",
-        variant: "destructive"
+        title: "Incomplete Data",
+        description: "Please fill in all required fields for both bets.",
+        variant: "destructive",
       });
       return;
     }
 
-    // Create new opportunity
-    const newOpportunity = {
-      id: `arb_manual_${Date.now()}`,
-      matchId: `match_manual_${Date.now()}`,
-      teamA: formData.teamA,
-      teamB: formData.teamB,
-      sport: formData.sport,
-      bookmakerA: userBookmaker,
-      bookmakerB: formData.bookmakerB,
-      oddA: oddA,
-      oddB: oddB,
-      totalPool: poolSize,
-      expiresIn: remainingTime * 60, // Convert minutes to seconds
-      profitMargin: ((1 - arbitrageSum) * 100).toFixed(2),
-      oddType: formData.oddType,
-      overUnderValue: formData.overUnderValue || null
-    };
+    const pool = parseFloat(poolSize);
+    if (isNaN(pool) || pool <= 0) {
+      toast({
+        title: "Invalid Pool Size",
+        description: "Please enter a valid pool size.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    onAddArbitrage(newOpportunity);
-    
-    // Reset form
-    setFormData({
-      sport: "",
-      teamA: "",
-      teamB: "",
-      oddA: "",
-      oddB: "",
-      bookmakerB: "",
-      poolSize: "",
-      remainingTime: "",
-      oddType: "",
-      overUnderValue: ""
-    });
+    try {
+      const arb = new ArbOpportunity(bet1, bet2);
+      
+      if (!arb.exists()) {
+        toast({
+          title: "No Arbitrage",
+          description: "These bets do not form a profitable arbitrage opportunity.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    toast({
-      title: "Arbitrage Added",
-      description: `${formData.teamA} vs ${formData.teamB} opportunity created with ${((1 - arbitrageSum) * 100).toFixed(2)}% profit margin`
-    });
+      const opportunity = {
+        id: `arb_manual_${Date.now()}`,
+        matchId: bet1.gameId,
+        teamA: bet1.teamHome,
+        teamB: bet1.teamAway,
+        sport: bet1.sport,
+        bookmakerA: bet1.bookmaker,
+        bookmakerB: bet2.bookmaker,
+        oddA: bet1.price,
+        oddB: bet2.price,
+        totalPool: pool,
+        expiresIn: 3600,
+        profitMargin: (arb.edge * 100).toFixed(2),
+        betA: bet1,
+        betB: bet2,
+      };
+
+      onAddArbitrage(opportunity);
+
+      setBetA(emptyBetForm);
+      setBetB(emptyBetForm);
+      setPoolSize("");
+      setActiveTab("general");
+
+      toast({
+        title: "Arbitrage Added",
+        description: `Opportunity created with ${(arb.edge * 100).toFixed(2)}% profit margin`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Invalid Bet Pair",
+        description: err.message || "These bets are not valid opposites for arbitrage.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const oddA = parseFloat(formData.oddA) || 0;
-  const oddB = parseFloat(formData.oddB) || 0;
-  const arbitrageSum = oddA && oddB ? calculateArbitrage(oddA, oddB) : 0;
-  const profitMargin = arbitrageSum && arbitrageSum < 1 ? ((1 - arbitrageSum) * 100).toFixed(2) : "0";
+  const renderBetForm = (bet: BetFormData, setBet: React.Dispatch<React.SetStateAction<BetFormData>>, betLabel: string) => {
+    const updateField = (field: keyof BetFormData, value: any) => {
+      setBet((prev) => {
+        const updated = { ...prev, [field]: value };
+        
+        // Reset dependent fields
+        if (field === "betType") {
+          updated.metric = "";
+          updated.line = "";
+          updated.side = "";
+          updated.selectionCode = "";
+        }
+        if (field === "metric") {
+          updated.line = "";
+          updated.side = "";
+          updated.selectionCode = "";
+        }
+        
+        return updated;
+      });
+    };
+
+    const availableMetrics = getAvailableMetrics(bet.betType);
+    const selectedMarket = bet.metric ? FootballMarkets[bet.metric] : null;
+
+    return (
+      <div className="space-y-4 py-4">
+        <h3 className="font-semibold text-lg">{betLabel}</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>League</Label>
+            <Input
+              value={bet.league}
+              onChange={(e) => updateField("league", e.target.value)}
+              placeholder="e.g., Premier League"
+            />
+          </div>
+          <div>
+            <Label>Game ID</Label>
+            <Input
+              value={bet.gameId}
+              onChange={(e) => updateField("gameId", e.target.value)}
+              placeholder="e.g., EPL_2024_001"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Home Team</Label>
+            <Input
+              value={bet.teamHome}
+              onChange={(e) => updateField("teamHome", e.target.value)}
+              placeholder="e.g., Arsenal"
+            />
+          </div>
+          <div>
+            <Label>Away Team</Label>
+            <Input
+              value={bet.teamAway}
+              onChange={(e) => updateField("teamAway", e.target.value)}
+              placeholder="e.g., Chelsea"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label>Bookmaker</Label>
+          <Input
+            value={bet.bookmaker}
+            onChange={(e) => updateField("bookmaker", e.target.value)}
+            placeholder="e.g., Bet365"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>Period</Label>
+            <Select value={bet.period} onValueChange={(value) => updateField("period", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={Period.FT}>Full Time</SelectItem>
+                <SelectItem value={Period.H1}>First Half</SelectItem>
+                <SelectItem value={Period.H2}>Second Half</SelectItem>
+                <SelectItem value={Period.ET}>Extra Time</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Concern</Label>
+            <Select value={bet.concern} onValueChange={(value) => updateField("concern", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select concern" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={Concern.TOTAL}>Total</SelectItem>
+                <SelectItem value={Concern.HOME}>Home Team</SelectItem>
+                <SelectItem value={Concern.AWAY}>Away Team</SelectItem>
+                <SelectItem value={Concern.PLAYER}>Player</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div>
+          <Label>Odds</Label>
+          <Input
+            type="number"
+            step="0.01"
+            min="1.01"
+            value={bet.odds}
+            onChange={(e) => updateField("odds", e.target.value)}
+            placeholder="e.g., 2.10"
+          />
+        </div>
+
+        <div>
+          <Label>Bet Type</Label>
+          <Select value={bet.betType} onValueChange={(value) => updateField("betType", value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select bet type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={BetType.EXACT}>Exact</SelectItem>
+              <SelectItem value={BetType.OVER_UNDER}>Over/Under</SelectItem>
+              <SelectItem value={BetType.BINARY}>Binary (Yes/No)</SelectItem>
+              <SelectItem value={BetType.HANDICAP}>Handicap</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {bet.betType && (
+          <div>
+            <Label>Market</Label>
+            <Select value={bet.metric} onValueChange={(value) => updateField("metric", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select market" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableMetrics.map((metricKey) => (
+                  <SelectItem key={metricKey} value={metricKey}>
+                    {FootballMarkets[metricKey].uiLabel}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {bet.betType === BetType.OVER_UNDER && (
+          <>
+            <div>
+              <Label>Line (e.g., 2.5)</Label>
+              <Input
+                type="number"
+                step="0.5"
+                value={bet.line}
+                onChange={(e) => updateField("line", e.target.value)}
+                placeholder="e.g., 2.5"
+              />
+            </div>
+            <div>
+              <Label>Side</Label>
+              <Select value={bet.side} onValueChange={(value) => updateField("side", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Over or Under" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="OVER">Over</SelectItem>
+                  <SelectItem value="UNDER">Under</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
+
+        {bet.betType === BetType.BINARY && (
+          <div>
+            <Label>Side</Label>
+            <Select value={bet.side} onValueChange={(value) => updateField("side", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Yes or No" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="YES">Yes</SelectItem>
+                <SelectItem value="NO">No</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {bet.betType === BetType.HANDICAP && (
+          <div>
+            <Label>Handicap Line (e.g., +0.5 or -1.5)</Label>
+            <Input
+              type="number"
+              step="0.5"
+              value={bet.line}
+              onChange={(e) => updateField("line", e.target.value)}
+              placeholder="e.g., -0.5"
+            />
+          </div>
+        )}
+
+        {bet.betType === BetType.EXACT && selectedMarket?.selections && (
+          <div>
+            <Label>Selection</Label>
+            <Select value={bet.selectionCode} onValueChange={(value) => updateField("selectionCode", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select outcome" />
+              </SelectTrigger>
+              <SelectContent>
+                {selectedMarket.selections.map((sel) => (
+                  <SelectItem key={sel.code} value={sel.code}>
+                    {sel.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const calculateArbPreview = () => {
+    const bet1 = formToBet(betA);
+    const bet2 = formToBet(betB);
+
+    if (!bet1 || !bet2) return null;
+
+    try {
+      const arb = new ArbOpportunity(bet1, bet2);
+      return {
+        exists: arb.exists(),
+        edge: arb.edge,
+        reason: arb.reason,
+      };
+    } catch (err: any) {
+      return {
+        exists: false,
+        error: err.message,
+      };
+    }
+  };
+
+  const arbPreview = calculateArbPreview();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Arbitrage Opportunity</DialogTitle>
+          <DialogDescription>
+            Define two opposite bets to create an arbitrage opportunity
+          </DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="sport">Sport</Label>
-            <Select value={formData.sport} onValueChange={(value) => handleInputChange("sport", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a sport" />
-              </SelectTrigger>
-              <SelectContent>
-                {sports.map((sport) => (
-                  <SelectItem key={sport.value} value={sport.value}>
-                    {sport.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
-          <div>
-            <Label htmlFor="oddType">Bet Type</Label>
-            <Select value={formData.oddType} onValueChange={(value) => handleInputChange("oddType", value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select bet type" />
-              </SelectTrigger>
-              <SelectContent>
-                {oddTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="bet1">First Bet</TabsTrigger>
+            <TabsTrigger value="bet2">Second Bet</TabsTrigger>
+          </TabsList>
 
-          {formData.oddType && oddTypes.find(t => t.value === formData.oddType)?.requiresValue && (
+          <TabsContent value="general" className="space-y-4">
             <div>
-              <Label htmlFor="overUnderValue">Over/Under Value</Label>
+              <Label>Pool Size ($)</Label>
               <Input
-                id="overUnderValue"
-                type="number"
-                step="0.5"
-                min="0"
-                value={formData.overUnderValue}
-                onChange={(e) => handleInputChange("overUnderValue", e.target.value)}
-                placeholder="e.g., 2.5"
-                required
-              />
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="teamA">Team A</Label>
-              <Input
-                id="teamA"
-                value={formData.teamA}
-                onChange={(e) => handleInputChange("teamA", e.target.value)}
-                placeholder="e.g., PSG"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="teamB">Team B</Label>
-              <Input
-                id="teamB"
-                value={formData.teamB}
-                onChange={(e) => handleInputChange("teamB", e.target.value)}
-                placeholder="e.g., Marseille"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="oddA">Odd A ({userBookmaker})</Label>
-              <Input
-                id="oddA"
-                type="number"
-                step="0.01"
-                min="1"
-                value={formData.oddA}
-                onChange={(e) => handleInputChange("oddA", e.target.value)}
-                placeholder="e.g., 2.1"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="oddB">Odd B</Label>
-              <Input
-                id="oddB"
-                type="number"
-                step="0.01"
-                min="1"
-                value={formData.oddB}
-                onChange={(e) => handleInputChange("oddB", e.target.value)}
-                placeholder="e.g., 2.05"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="bookmakerB">Bookmaker B</Label>
-            <Input
-              id="bookmakerB"
-              value={formData.bookmakerB}
-              onChange={(e) => handleInputChange("bookmakerB", e.target.value)}
-              placeholder="e.g., Bilyoner"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="poolSize">Pool Size ($)</Label>
-              <Input
-                id="poolSize"
                 type="number"
                 min="1"
-                value={formData.poolSize}
-                onChange={(e) => handleInputChange("poolSize", e.target.value)}
+                value={poolSize}
+                onChange={(e) => setPoolSize(e.target.value)}
                 placeholder="e.g., 1000"
-                required
               />
             </div>
-            <div>
-              <Label htmlFor="remainingTime">Time (minutes)</Label>
-              <Input
-                id="remainingTime"
-                type="number"
-                min="1"
-                value={formData.remainingTime}
-                onChange={(e) => handleInputChange("remainingTime", e.target.value)}
-                placeholder="e.g., 30"
-                required
-              />
-            </div>
-          </div>
 
-          {oddA && oddB && (
-            <div className="p-3 bg-muted rounded-md">
-              <div className="text-sm">
-                <p>Arbitrage Sum: {arbitrageSum.toFixed(4)}</p>
-                <p className={arbitrageSum >= 1 ? "text-destructive" : "text-success"}>
-                  {arbitrageSum >= 1 ? "❌ No arbitrage opportunity" : `✅ Profit Margin: ${profitMargin}%`}
+            <div className="p-4 bg-muted rounded-lg space-y-2">
+              <h4 className="font-semibold">Arbitrage Analysis</h4>
+              {arbPreview ? (
+                arbPreview.exists ? (
+                  <div className="space-y-1 text-sm">
+                    <p className="text-success">✅ Valid Arbitrage Opportunity</p>
+                    <p>Edge: {(arbPreview.edge! * 100).toFixed(2)}%</p>
+                    <p className="text-muted-foreground">{arbPreview.reason}</p>
+                  </div>
+                ) : (
+                  <p className="text-destructive text-sm">
+                    ❌ {arbPreview.error || "No arbitrage opportunity detected"}
+                  </p>
+                )
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  Complete both bets to see arbitrage analysis
                 </p>
-              </div>
+              )}
             </div>
-          )}
+          </TabsContent>
 
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              className="flex-1"
-              disabled={!formData.sport || !formData.oddType || !formData.teamA || !formData.teamB || !formData.oddA || !formData.oddB || !formData.bookmakerB || !formData.poolSize || !formData.remainingTime || (oddTypes.find(t => t.value === formData.oddType)?.requiresValue && !formData.overUnderValue)}
-            >
-              Add Arbitrage
-            </Button>
-          </div>
-        </form>
+          <TabsContent value="bet1">
+            {renderBetForm(betA, setBetA, "First Bet")}
+          </TabsContent>
+
+          <TabsContent value="bet2">
+            {renderBetForm(betB, setBetB, "Second Bet")}
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmit}
+            className="flex-1"
+            disabled={!arbPreview || !arbPreview.exists || !poolSize}
+          >
+            Add Arbitrage
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
