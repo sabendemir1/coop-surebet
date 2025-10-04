@@ -95,15 +95,10 @@ const GoalsBands: Selection[] = [
 // === Master dictionary ===
 export const FootballMarkets: Record<string, MarketInfo> = {
   // ---- Exact bets (with ready-to-use selections) ----
-  "1X2": {
+  "result": {
     betType: BetType.EXACT,
-    uiLabel: "Match Result (1X2)",
+    uiLabel: "Result (1X2)",
     selections: Result1X2,
-  },
-  "half_time_result": {
-    betType: BetType.EXACT,
-    uiLabel: "Half-Time Result",
-    selections: HalfTimeResult,
   },
   "ht_ft": {
     betType: BetType.EXACT,
@@ -147,22 +142,17 @@ export const FootballMarkets: Record<string, MarketInfo> = {
   },
 
   // ---- Over/Under bets (values handled by line + Over/Under) ----
-  "total_goals_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Total Goals Over/Under" },
-  "team_total_goals_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Team Goals Over/Under" },
-  "half_goals_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Half-Time Goals Over/Under" },
-  "corners_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Corners Over/Under" },
-  "cards_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Cards / Booking Points Over/Under" },
-  "shots_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Shots Over/Under" },
-  "shots_on_target_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Shots on Target Over/Under" },
-  "offsides_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Offsides Over/Under" },
-  "fouls_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Fouls Over/Under" },
+  "goals_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Goals" },
+  "corners_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Corners" },
+  "cards_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Cards / Booking Points" },
+  "shots_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Shots" },
+  "shots_on_target_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Shots on Target" },
+  "offsides_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Offsides" },
+  "fouls_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Fouls" },
 
   // ---- Binary bets (Yes/No handled by side) ----
   "btts": { betType: BetType.BINARY, uiLabel: "Both Teams To Score" },
-  "btts_first_half": { betType: BetType.BINARY, uiLabel: "BTTS in 1st Half" },
-  "btts_second_half": { betType: BetType.BINARY, uiLabel: "BTTS in 2nd Half" },
-  "goal_in_first_half": { betType: BetType.BINARY, uiLabel: "Goal in 1st Half" },
-  "goal_in_second_half": { betType: BetType.BINARY, uiLabel: "Goal in 2nd Half" },
+  "goal": { betType: BetType.BINARY, uiLabel: "Goal" },
   "goal_in_first_10min": { betType: BetType.BINARY, uiLabel: "Goal in First 10 Minutes" },
   "both_halves_over_0_5": { betType: BetType.BINARY, uiLabel: "Over 0.5 Goals in Both Halves" },
   "penalty_awarded": { betType: BetType.BINARY, uiLabel: "Penalty Awarded" },

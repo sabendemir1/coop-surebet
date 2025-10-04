@@ -235,6 +235,10 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
           updated.line = "";
           updated.side = "";
           updated.selectionCode = "";
+          // Automatically set concern to TOTAL for EXACT bet types
+          if (value === BetType.EXACT) {
+            updated.concern = Concern.TOTAL;
+          }
         }
         if (field === "metric") {
           updated.line = "";
@@ -326,7 +330,11 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
           </div>
           <div>
             <Label>Concern</Label>
-            <Select value={bet.concern} onValueChange={(value) => updateField("concern", value)}>
+            <Select 
+              value={bet.concern} 
+              onValueChange={(value) => updateField("concern", value)}
+              disabled={bet.betType === BetType.EXACT}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select concern" />
               </SelectTrigger>
@@ -484,6 +492,53 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
 
   const arbPreview = calculateArbPreview();
 
+  const generateBetDescription = (bet: BetFormData): string => {
+    if (!bet.betType || !bet.metric || !bet.period || !bet.concern) {
+      return "Incomplete bet details";
+    }
+
+    const periodText = {
+      [Period.FT]: "Full Time",
+      [Period.H1]: "1st Half", 
+      [Period.H2]: "2nd Half",
+      [Period.ET]: "Extra Time"
+    }[bet.period as Period] || bet.period;
+
+    const concernText = {
+      [Concern.TOTAL]: "Total",
+      [Concern.HOME]: "Home",
+      [Concern.AWAY]: "Away", 
+      [Concern.PLAYER]: "Player"
+    }[bet.concern as Concern] || bet.concern;
+
+    const marketLabel = FootballMarkets[bet.metric]?.uiLabel || bet.metric;
+
+    switch (bet.betType) {
+      case BetType.OVER_UNDER:
+        const overUnderSide = bet.side === "OVER" ? "Over" : bet.side === "UNDER" ? "Under" : "Over/Under";
+        const line = bet.line ? ` ${bet.line}` : "";
+        return `${concernText} ${overUnderSide}${line} ${marketLabel} in ${periodText}`;
+
+      case BetType.BINARY:
+        const binarySide = bet.side === "YES" ? "Yes" : bet.side === "NO" ? "No" : "Yes/No";
+        return `${binarySide} ${marketLabel} (${concernText}) in ${periodText}`;
+
+      case BetType.HANDICAP:
+        const lineValue = parseFloat(bet.line);
+        const handicapLine = bet.line ? ` ${lineValue >= 0 ? '+' : ''}${bet.line}` : "";
+        return `${concernText}${handicapLine} ${marketLabel} in ${periodText}`;
+
+      case BetType.EXACT:
+        const selection = bet.selectionCode ? 
+          FootballMarkets[bet.metric]?.selections?.find(s => s.code === bet.selectionCode)?.label || bet.selectionCode
+          : "selection";
+        return `${selection} ${marketLabel} in ${periodText}`;
+
+      default:
+        return "Unknown bet type";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -569,10 +624,18 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
 
           <TabsContent value="bet1">
             {renderBetForm(betA, setBetA, "First Bet")}
+            <div className="p-3 bg-muted rounded-lg mt-4">
+              <h4 className="font-semibold text-sm mb-1">Bet 1 Summary:</h4>
+              <p className="text-sm text-muted-foreground">{generateBetDescription(betA)}</p>
+            </div>
           </TabsContent>
 
           <TabsContent value="bet2">
             {renderBetForm(betB, setBetB, "Second Bet")}
+            <div className="p-3 bg-muted rounded-lg mt-4">
+              <h4 className="font-semibold text-sm mb-1">Bet 2 Summary:</h4>
+              <p className="text-sm text-muted-foreground">{generateBetDescription(betB)}</p>
+            </div>
           </TabsContent>
         </Tabs>
 
