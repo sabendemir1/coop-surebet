@@ -52,6 +52,8 @@ export interface YesNoBet extends BetBase {
   side: "YES" | "NO";
   // Optional time window for "goal in first 10'", etc.
   window?: { startMin: number; endMin: number };
+  // Optional player name for player-specific bets
+  playerName?: string;
 }
 
 export interface HandicapBet extends BetBase {

@@ -25,6 +25,14 @@ const bookmakers = [
   { id: "stake", name: "Stake (Curacao)", country: "🇨🇼" }
 ];
 
+const samplePlayers = [
+  "Erling Haaland", "Kylian Mbappé", "Harry Kane", "Mohamed Salah", 
+  "Robert Lewandowski", "Lionel Messi", "Cristiano Ronaldo", "Neymar Jr.",
+  "Kevin De Bruyne", "Luka Modrić", "Virgil van Dijk", "Sadio Mané",
+  "Raheem Sterling", "Bruno Fernandes", "Son Heung-min", "Jadon Sancho",
+  "Phil Foden", "Mason Mount", "Declan Rice", "Jude Bellingham"
+];
+
 interface AddArbitrageDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,6 +55,9 @@ interface BetFormData {
   line: string;
   side: "OVER" | "UNDER" | "YES" | "NO" | "";
   selectionCode: string;
+  playerName: string;
+  timeFrom: string;
+  timeTo: string;
 }
 
 const emptyBetForm: BetFormData = {
@@ -64,6 +75,9 @@ const emptyBetForm: BetFormData = {
   line: "",
   side: "",
   selectionCode: "",
+  playerName: "",
+  timeFrom: "1",
+  timeTo: "10",
 };
 
 const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker }: AddArbitrageDialogProps) => {
@@ -119,11 +133,26 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       }
       case BetType.BINARY: {
         if (!form.side || (form.side !== "YES" && form.side !== "NO")) return null;
-        return {
+        const binaryBet: any = {
           ...baseProps,
           marketType: BetType.BINARY,
           side: form.side as "YES" | "NO",
         };
+        
+        // Add time window for goal_between_minutes
+        if (form.metric === "goal_between_minutes" && form.timeFrom && form.timeTo) {
+          binaryBet.window = {
+            startMin: parseInt(form.timeFrom),
+            endMin: parseInt(form.timeTo)
+          };
+        }
+        
+        // Add player name for player-specific bets
+        if (form.concern === Concern.PLAYER && form.playerName) {
+          binaryBet.playerName = form.playerName;
+        }
+        
+        return binaryBet;
       }
       case BetType.HANDICAP: {
         const line = parseFloat(form.line);
@@ -235,15 +264,44 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
           updated.line = "";
           updated.side = "";
           updated.selectionCode = "";
-          // Automatically set concern to TOTAL for EXACT bet types
+          updated.playerName = "";
+          updated.timeFrom = "1";
+          updated.timeTo = "10";
+          // Automatically set concern to TOTAL and period to FT for EXACT bet types
           if (value === BetType.EXACT) {
             updated.concern = Concern.TOTAL;
+            updated.period = Period.FT;
           }
         }
         if (field === "metric") {
           updated.line = "";
           updated.side = "";
           updated.selectionCode = "";
+          updated.playerName = "";
+          updated.timeFrom = "1";
+          updated.timeTo = "10";
+          
+          // Apply market-specific constraints
+          if (value && FootballMarkets[value]) {
+            const market = FootballMarkets[value];
+            if (market.fixedPeriod) {
+              updated.period = market.fixedPeriod;
+            }
+            if (market.fixedConcern) {
+              updated.concern = market.fixedConcern;
+            }
+            // If there are allowed concerns and current concern is not in the list, reset it
+            if (market.allowedConcerns && !market.allowedConcerns.includes(updated.concern as Concern)) {
+              updated.concern = "";
+            }
+          }
+        }
+        if (field === "concern" && value !== Concern.PLAYER) {
+          updated.playerName = "";
+        }
+        if (field === "metric" && value !== "goal_between_minutes") {
+          updated.timeFrom = "1";
+          updated.timeTo = "10";
         }
         
         return updated;
@@ -252,6 +310,11 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
 
     const availableMetrics = getAvailableMetrics(bet.betType);
     const selectedMarket = bet.metric ? FootballMarkets[bet.metric] : null;
+    
+    // Determine if period/concern should be disabled
+    const isPeriodDisabled = bet.betType === BetType.EXACT || (selectedMarket?.fixedPeriod !== undefined);
+    const isConcernDisabled = bet.betType === BetType.EXACT || (selectedMarket?.fixedConcern !== undefined);
+    const availableConcerns = selectedMarket?.allowedConcerns || [Concern.TOTAL, Concern.HOME, Concern.AWAY, Concern.PLAYER];
 
     return (
       <div className="space-y-4 py-4">
@@ -316,7 +379,11 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Period</Label>
-            <Select value={bet.period} onValueChange={(value) => updateField("period", value)}>
+            <Select 
+              value={bet.period} 
+              onValueChange={(value) => updateField("period", value)}
+              disabled={isPeriodDisabled}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select period" />
               </SelectTrigger>
@@ -333,20 +400,46 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
             <Select 
               value={bet.concern} 
               onValueChange={(value) => updateField("concern", value)}
-              disabled={bet.betType === BetType.EXACT}
+              disabled={isConcernDisabled}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select concern" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={Concern.TOTAL}>Total</SelectItem>
-                <SelectItem value={Concern.HOME}>Home Team</SelectItem>
-                <SelectItem value={Concern.AWAY}>Away Team</SelectItem>
-                <SelectItem value={Concern.PLAYER}>Player</SelectItem>
+                {availableConcerns.includes(Concern.TOTAL) && (
+                  <SelectItem value={Concern.TOTAL}>Total</SelectItem>
+                )}
+                {availableConcerns.includes(Concern.HOME) && (
+                  <SelectItem value={Concern.HOME}>Home Team</SelectItem>
+                )}
+                {availableConcerns.includes(Concern.AWAY) && (
+                  <SelectItem value={Concern.AWAY}>Away Team</SelectItem>
+                )}
+                {availableConcerns.includes(Concern.PLAYER) && (
+                  <SelectItem value={Concern.PLAYER}>Player</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
         </div>
+
+        {bet.concern === Concern.PLAYER && (
+          <div>
+            <Label>Player Name</Label>
+            <Select value={bet.playerName} onValueChange={(value) => updateField("playerName", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select player" />
+              </SelectTrigger>
+              <SelectContent>
+                {samplePlayers.map((player) => (
+                  <SelectItem key={player} value={player}>
+                    {player}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div>
           <Label>Odds</Label>
@@ -435,6 +528,39 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
           </div>
         )}
 
+        {bet.betType === BetType.BINARY && bet.metric === "goal_between_minutes" && (
+          <div>
+            <Label>Time Range (minutes)</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">From</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="90"
+                  value={bet.timeFrom}
+                  onChange={(e) => updateField("timeFrom", e.target.value)}
+                  placeholder="1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">To</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="90"
+                  value={bet.timeTo}
+                  onChange={(e) => updateField("timeTo", e.target.value)}
+                  placeholder="10"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Goal between minute {bet.timeFrom} and {bet.timeTo}
+            </p>
+          </div>
+        )}
+
         {bet.betType === BetType.HANDICAP && (
           <div>
             <Label>Handicap Line (e.g., +0.5 or -1.5)</Label>
@@ -517,11 +643,16 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
       case BetType.OVER_UNDER:
         const overUnderSide = bet.side === "OVER" ? "Over" : bet.side === "UNDER" ? "Under" : "Over/Under";
         const line = bet.line ? ` ${bet.line}` : "";
-        return `${concernText} ${overUnderSide}${line} ${marketLabel} in ${periodText}`;
+        const playerInfoOU = bet.concern === Concern.PLAYER && bet.playerName ? ` (${bet.playerName})` : "";
+        return `${concernText}${playerInfoOU} ${overUnderSide}${line} ${marketLabel} in ${periodText}`;
 
       case BetType.BINARY:
         const binarySide = bet.side === "YES" ? "Yes" : bet.side === "NO" ? "No" : "Yes/No";
-        return `${binarySide} ${marketLabel} (${concernText}) in ${periodText}`;
+        const playerInfo = bet.concern === Concern.PLAYER && bet.playerName ? ` - ${bet.playerName}` : "";
+        const timeRange = bet.metric === "goal_between_minutes" && bet.timeFrom && bet.timeTo 
+          ? ` (${bet.timeFrom}-${bet.timeTo} min)` 
+          : "";
+        return `${binarySide} ${marketLabel}${timeRange} (${concernText}${playerInfo}) in ${periodText}`;
 
       case BetType.HANDICAP:
         const lineValue = parseFloat(bet.line);
@@ -532,7 +663,7 @@ const AddArbitrageDialog = ({ open, onOpenChange, onAddArbitrage, userBookmaker 
         const selection = bet.selectionCode ? 
           FootballMarkets[bet.metric]?.selections?.find(s => s.code === bet.selectionCode)?.label || bet.selectionCode
           : "selection";
-        return `${selection} ${marketLabel} in ${periodText}`;
+        return `${selection} - ${marketLabel}`;
 
       default:
         return "Unknown bet type";

@@ -1,4 +1,4 @@
-import { BetType } from "@/types/betting";
+import { BetType, Period, Concern } from "@/types/betting";
 
 // === Types ===
 export interface Selection {
@@ -10,6 +10,10 @@ export interface MarketInfo {
   betType: BetType;
   uiLabel: string;
   selections?: Selection[]; // ONLY for ExactBet
+  // Automatic constraints for specific markets
+  fixedPeriod?: Period;     // Force this period and disable dropdown
+  fixedConcern?: Concern;   // Force this concern and disable dropdown
+  allowedConcerns?: Concern[]; // Limit available concerns (e.g., only HOME/AWAY)
 }
 
 // === Helpers (for Exact markets that have many outcomes) ===
@@ -95,9 +99,19 @@ const GoalsBands: Selection[] = [
 // === Master dictionary ===
 export const FootballMarkets: Record<string, MarketInfo> = {
   // ---- Exact bets (with ready-to-use selections) ----
-  "result": {
+  "match_result": {
     betType: BetType.EXACT,
-    uiLabel: "Result (1X2)",
+    uiLabel: "Match Result (1X2)",
+    selections: Result1X2,
+  },
+  "first_half_result": {
+    betType: BetType.EXACT,
+    uiLabel: "1st Half Result",
+    selections: Result1X2,
+  },
+  "second_half_result": {
+    betType: BetType.EXACT,
+    uiLabel: "2nd Half Result",
     selections: Result1X2,
   },
   "ht_ft": {
@@ -143,8 +157,16 @@ export const FootballMarkets: Record<string, MarketInfo> = {
 
   // ---- Over/Under bets (values handled by line + Over/Under) ----
   "goals_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Goals" },
-  "corners_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Corners" },
-  "cards_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Cards / Booking Points" },
+  "corners_over_under": { 
+    betType: BetType.OVER_UNDER, 
+    uiLabel: "Corners",
+    allowedConcerns: [Concern.TOTAL, Concern.HOME, Concern.AWAY]
+  },
+  "cards_over_under": { 
+    betType: BetType.OVER_UNDER, 
+    uiLabel: "Cards / Booking Points",
+    allowedConcerns: [Concern.TOTAL, Concern.HOME, Concern.AWAY]
+  },
   "shots_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Shots" },
   "shots_on_target_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Shots on Target" },
   "offsides_over_under": { betType: BetType.OVER_UNDER, uiLabel: "Offsides" },
@@ -153,20 +175,76 @@ export const FootballMarkets: Record<string, MarketInfo> = {
   // ---- Binary bets (Yes/No handled by side) ----
   "btts": { betType: BetType.BINARY, uiLabel: "Both Teams To Score" },
   "goal": { betType: BetType.BINARY, uiLabel: "Goal" },
-  "goal_in_first_10min": { betType: BetType.BINARY, uiLabel: "Goal in First 10 Minutes" },
-  "both_halves_over_0_5": { betType: BetType.BINARY, uiLabel: "Over 0.5 Goals in Both Halves" },
+  "goal_between_minutes": { 
+    betType: BetType.BINARY, 
+    uiLabel: "Goal between X to Y minutes",
+    fixedPeriod: Period.FT,
+    allowedConcerns: [Concern.TOTAL, Concern.HOME, Concern.AWAY]
+  },
+  "both_halves_over_0_5": { 
+    betType: BetType.BINARY, 
+    uiLabel: "Over 0.5 Goals in Both Halves",
+    fixedPeriod: Period.FT,
+    allowedConcerns: [Concern.TOTAL, Concern.HOME, Concern.AWAY]
+  },
   "penalty_awarded": { betType: BetType.BINARY, uiLabel: "Penalty Awarded" },
   "red_card": { betType: BetType.BINARY, uiLabel: "Red Card" },
-  "clean_sheet": { betType: BetType.BINARY, uiLabel: "Clean Sheet" },
-  "win_to_nil": { betType: BetType.BINARY, uiLabel: "Win to Nil" },
-  "to_qualify": { betType: BetType.BINARY, uiLabel: "To Qualify" },
-  "to_lift_trophy": { betType: BetType.BINARY, uiLabel: "To Lift Trophy" },
-  "player_to_score_anytime": { betType: BetType.BINARY, uiLabel: "Player to Score Anytime" },
-  "player_to_be_carded": { betType: BetType.BINARY, uiLabel: "Player to be Carded" },
-  "player_offside": { betType: BetType.BINARY, uiLabel: "Player Offside" },
+  "clean_sheet": { 
+    betType: BetType.BINARY, 
+    uiLabel: "Clean Sheet",
+    allowedConcerns: [Concern.TOTAL, Concern.HOME, Concern.AWAY]
+  },
+  "win_to_nil": { 
+    betType: BetType.BINARY, 
+    uiLabel: "Win to Nil",
+    fixedPeriod: Period.FT,
+    allowedConcerns: [Concern.TOTAL, Concern.HOME, Concern.AWAY]
+  },
+  "to_qualify": { 
+    betType: BetType.BINARY, 
+    uiLabel: "To Qualify",
+    fixedPeriod: Period.FT,
+    allowedConcerns: [Concern.HOME, Concern.AWAY]
+  },
+  "to_lift_trophy": { 
+    betType: BetType.BINARY, 
+    uiLabel: "To Lift Trophy",
+    fixedPeriod: Period.FT,
+    allowedConcerns: [Concern.HOME, Concern.AWAY]
+  },
+  "player_to_score_anytime": { 
+    betType: BetType.BINARY, 
+    uiLabel: "Player to Score Anytime",
+    fixedPeriod: Period.FT,
+    fixedConcern: Concern.PLAYER
+  },
+  "player_to_be_carded": { 
+    betType: BetType.BINARY, 
+    uiLabel: "Player to be Carded",
+    fixedPeriod: Period.FT,
+    fixedConcern: Concern.PLAYER
+  },
+  "player_offside": { 
+    betType: BetType.BINARY, 
+    uiLabel: "Player Offside",
+    fixedPeriod: Period.FT,
+    fixedConcern: Concern.PLAYER
+  },
 
   // ---- Handicap bets (values handled by line ±y.5 etc.) ----
-  "asian_handicap": { betType: BetType.HANDICAP, uiLabel: "Asian Handicap" },
-  "asian_handicap_whole_line": { betType: BetType.HANDICAP, uiLabel: "Asian Handicap (Whole Line)" },
-  "asian_handicap_quarter_line": { betType: BetType.HANDICAP, uiLabel: "Asian Handicap (Quarter Line)" },
+  "asian_handicap": { 
+    betType: BetType.HANDICAP, 
+    uiLabel: "Asian Handicap",
+    allowedConcerns: [Concern.HOME, Concern.AWAY]
+  },
+  "asian_handicap_whole_line": { 
+    betType: BetType.HANDICAP, 
+    uiLabel: "Asian Handicap (Whole Line)",
+    allowedConcerns: [Concern.HOME, Concern.AWAY]
+  },
+  "asian_handicap_quarter_line": { 
+    betType: BetType.HANDICAP, 
+    uiLabel: "Asian Handicap (Quarter Line)",
+    allowedConcerns: [Concern.HOME, Concern.AWAY]
+  },
 };

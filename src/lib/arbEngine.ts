@@ -17,6 +17,10 @@ const sameBaseEvent = (a: BetBase, b: BetBase) =>
 const sameWindow = (aw?: {startMin:number; endMin:number}, bw?: {startMin:number; endMin:number}) =>
   (!aw && !bw) || (!!aw && !!bw && aw.startMin === bw.startMin && aw.endMin === bw.endMin);
 
+// For Binary w/ player-specific props (e.g., player to score).
+const samePlayer = (aPlayer?: string, bPlayer?: string) =>
+  (!aPlayer && !bPlayer) || (!!aPlayer && !!bPlayer && aPlayer === bPlayer);
+
 // ========= Opposite / Complement rules =========
 
 // Over/Under: same market, same concern, same period, same line; sides opposite
@@ -29,14 +33,18 @@ const isOppositeOverUnder = (a: AnyBet, b: AnyBet): { ok: boolean; reason?: stri
   return { ok: true, reason: `OU complement: ${A.side} ${A.line} ↔ ${B.side} ${B.line}` };
 };
 
-// Binary: same market/concern/period/(window), sides Yes/No
+// Binary: same market/concern/period/(window)/(player), sides Yes/No
 const isOppositeBinary = (a: AnyBet, b: AnyBet): { ok: boolean; reason?: string } => {
   if (a.marketType !== BetType.BINARY || b.marketType !== BetType.BINARY) return { ok: false };
   const A = a as YesNoBet, B = b as YesNoBet;
   if (!sameBaseEvent(A, B)) return { ok: false };
   if (!sameWindow(A.window, B.window)) return { ok: false };
+  if (!samePlayer(A.playerName, B.playerName)) return { ok: false };
   if (A.side === B.side) return { ok: false };
-  return { ok: true, reason: `YN complement: ${A.side} ↔ ${B.side}` };
+  
+  const playerInfo = A.playerName ? ` (${A.playerName})` : "";
+  const windowInfo = A.window ? ` [${A.window.startMin}-${A.window.endMin}min]` : "";
+  return { ok: true, reason: `YN complement: ${A.side} ↔ ${B.side}${playerInfo}${windowInfo}` };
 };
 
 // Handicap: same event, HOME line == -(AWAY line). Accept ±(n + 0.5)
