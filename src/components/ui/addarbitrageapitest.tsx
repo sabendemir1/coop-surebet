@@ -83,7 +83,7 @@ export function AddArbitrageApiTestDialog({ open, onOpenChange }: Props) {
 
   const canCall = provider && sport && league && market;
 
-  const ODDS_API_KEY = "39c24a626f86d466510c428dad38ef12";
+  const ODDS_API_KEY = "YOUR_API_KEY";
   // Mapping to The Odds API sport keys
   const leagueToSportKey: Record<string, string> = {
     premier_league: "soccer_epl",
