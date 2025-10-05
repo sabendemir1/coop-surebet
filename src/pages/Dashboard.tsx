@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import ArbitrageOpportunity from "@/components/ArbitrageOpportunity";
 import AddArbitrageDialog from "@/components/AddArbitrageDialog";
 import FilterDialog from "@/components/FilterDialog";
+import { AddArbitrageApiTestDialog } from "@/components/ui/addarbitrageapitest";
 
 // Mock data generator for arbitrage opportunities
 const generateArbitrageOpportunities = () => {
@@ -96,6 +97,7 @@ const Dashboard = () => {
   const [opportunities, setOpportunities] = useState(generateArbitrageOpportunities());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+  const [apiTestOpen, setApiTestOpen] = useState(false);
   const [filters, setFilters] = useState({
     sport: "all",
     minTime: "",
@@ -258,6 +260,7 @@ const Dashboard = () => {
               <Plus className="w-4 h-4" />
               Add Arbitrage
             </Button>
+            <Button onClick={() => setApiTestOpen(true)}>API Test</Button>
           </div>
         </div>
 
@@ -336,6 +339,11 @@ const Dashboard = () => {
         onOpenChange={setIsFilterDialogOpen}
         onApplyFilters={handleApplyFilters}
         currentFilters={filters}
+      />
+
+      <AddArbitrageApiTestDialog
+        open={apiTestOpen}
+        onOpenChange={setApiTestOpen}
       />
     </div>
   );
